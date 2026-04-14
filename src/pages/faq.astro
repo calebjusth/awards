@@ -1,0 +1,141 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const faqData = [
+  {
+    category: "Account",
+    questions: [
+      { q: "How do I create a Vanguard profile?", a: "Click the 'Join' button in the header. You'll need to link your GitHub account and provide a portfolio link for verification." },
+      { q: "Can I change my developer name later?", a: "Yes, you can update your professional alias and branding through your account settings once every 30 days." }
+    ]
+  },
+  {
+    category: "Jury",
+    questions: [
+      { q: "How is the Jury selected?", a: "Our Jury consists of top-rated developers and designers from the previous year's 'Selection' winners and invited industry veterans." },
+      { q: "What is the criteria for scoring?", a: "Sites are judged on technical performance (40%), visual innovation (30%), and user experience (30%)." }
+    ]
+  },
+  {
+    category: "Submissions",
+    questions: [
+      { q: "Is there a submission fee?", a: "Basic submission is free. We offer a 'Premium Indexing' option for priority review and permanent archival in our high-res gallery." },
+      { q: "Can I submit a site I didn't build?", a: "No. You must be the primary developer or lead agency to submit a project. Credit must be given to all collaborators." }
+    ]
+  }
+];
+
+const categories = ["All", ...faqData.map(d => d.category)];
+
+// SEO: Generate Schema.org JSON-LD for FAQ
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqData.flatMap(section => 
+    section.questions.map(item => ({
+      "@type": "Question",
+      "name": item.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.a
+      }
+    }))
+  )
+};
+---
+
+<Layout title="FAQ | yet — Technical Knowledge Base" description="Frequently asked questions about the yet digital awards, jury selection, and submission process for developers in Ethiopia.">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+    <main class="site-frame py-24 md:py-32">
+        <header class="mb-16 md:mb-24 border-b border-ink/10 pb-12 md:pb-16">
+            <h1 class="font-title text-7xl md:text-[10rem] leading-none mb-8">FAQ.</h1>
+            <p class="font-body font-black text-[10px] uppercase text-primary">Technical Knowledge Base & Guidelines</p>
+        </header>
+
+        <div class="flex flex-col lg:flex-row gap-16 md:gap-20">
+            <aside class="lg:w-1/3 lg:sticky lg:top-32 h-fit order-2 lg:order-1">
+                <span class="font-body font-black text-[10px] uppercase opacity-30 mb-6 md:mb-8 block">Select Category</span>
+                <nav class="flex flex-wrap lg:flex-col items-start gap-4 md:gap-6">
+                    {categories.map((cat) => (
+                        <button 
+                            class="faq-nav-btn font-body text-3xl md:text-5xl hover:text-primary transition-colors text-ink/20 data-[active=true]:text-ink"
+                            data-category={cat}
+                            data-active={cat === "All"}
+                        >
+                            {cat}.
+                        </button>
+                    ))}
+                </nav>
+            </aside>
+
+            <div class="lg:w-2/3 flex flex-col gap-12 order-1 lg:order-2">
+                {faqData.map((section) => (
+                    <div class="faq-section" data-section={section.category}>
+                        <div class="flex items-center gap-4 mb-8">
+                             <div class="h-px w-8 bg-primary"></div>
+                             <h3 class="font-body font-black text-[10px] uppercase text-primary">
+                                {section.category} Archive
+                            </h3>
+                        </div>
+                        
+                        <div class="flex flex-col border-t border-ink/10">
+                            {section.questions.map((item) => (
+                                <details class="group border-b border-ink/10 cursor-pointer overflow-hidden">
+                                    <summary class="flex justify-between items-center py-6 md:py-8 list-none group-hover:bg-ink/[0.02] px-2 md:px-4 transition-colors">
+                                        <h4 class="font-body text-xl md:text-3xl pr-8 leading-tight">{item.q}</h4>
+                                        <div class="shrink-0 w-10 h-10 border border-ink/10 flex items-center justify-center group-open:rotate-45 transition-transform duration-300">
+                                            <span class="font-body text-xl">+</span>
+                                        </div>
+                                    </summary>
+                                    <div class="px-2 md:px-4 pb-10 md:pb-12 pt-4">
+                                        <p class="font-body text-base md:text-lg opacity-60 max-w-xl leading-relaxed">
+                                            {item.a}
+                                        </p>
+                                    </div>
+                                </details>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const btns = document.querySelectorAll('.faq-nav-btn');
+        const sections = document.querySelectorAll('.faq-section');
+
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-category');
+
+                btns.forEach(b => b.setAttribute('data-active', 'false'));
+                btn.setAttribute('data-active', 'true');
+
+                sections.forEach(section => {
+                    const htmlSection = section as HTMLElement;
+                    if (target === "All" || htmlSection.getAttribute('data-section') === target) {
+                        htmlSection.style.display = 'block';
+                    } else {
+                        htmlSection.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</Layout>
+
+<style>
+    summary::-webkit-details-marker {
+        display: none;
+    }
+    /* Smooth transitions for filtering */
+    .faq-section {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
