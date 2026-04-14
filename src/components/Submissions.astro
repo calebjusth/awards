@@ -1,0 +1,96 @@
+---
+const submissions = [
+  {
+    title: "ABYSSINIA BAKERY",
+    author: "Kaleb Yohannes",
+    authorImg: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100",
+    thumbnail: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=2072",
+  },
+  {
+    title: "ETHIO-TECH HUB",
+    author: "Studio 251",
+    authorImg: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=100",
+    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2026",
+  },
+  {
+    title: "LUCY'S LEGACY",
+    author: "Freelance Creative",
+    authorImg: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=100",
+    thumbnail: "https://images.unsplash.com/photo-1519389428555-9809164732ff?q=80&w=2070",
+  },
+  {
+    title: "RED SEA LOGISTICS",
+    author: "Nati Design",
+    authorImg: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100",
+    thumbnail: "https://images.unsplash.com/photo-1586717791821-3f44a563dc4c?q=80&w=2070",
+  },
+    {
+    title: "ABYSSINIA BAKERY",
+    author: "Kaleb Yohannes",
+    authorImg: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100",
+    thumbnail: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=2072",
+  },
+  {
+    title: "ETHIO-TECH HUB",
+    author: "Studio 251",
+    authorImg: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=100",
+    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2026",
+  },
+  {
+    title: "LUCY'S LEGACY",
+    author: "Freelance Creative",
+    authorImg: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=100",
+    thumbnail: "https://images.unsplash.com/photo-1519389428555-9809164732ff?q=80&w=2070",
+  },
+  {
+    title: "RED SEA LOGISTICS",
+    author: "Nati Design",
+    authorImg: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100",
+    thumbnail: "https://images.unsplash.com/photo-1586717791821-3f44a563dc4c?q=80&w=2070",
+  }
+];
+---
+
+<section class="site-frame py-24 border-t border-ink/5">
+    <div class="flex flex-col md:flex-row justify-between items-baseline mb-12 gap-4">
+        <h2 class="text-5xl font-title">Recent Submissions</h2>
+        <p class="font-body font-bold text-sm opacity-40 uppercase tracking-[0.3em]">Fresh from the community</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {submissions.map((site) => (
+            <div class="group flex flex-col gap-4">
+                
+                <div class="relative aspect-video overflow-hidden border border-ink/5 bg-ink/5">
+                    <img 
+                        src={site.thumbnail} 
+                        alt={site.title} 
+                        class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+
+                    <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-end p-4 gap-3">
+                        <button class="w-10 h-10 rounded-full bg-canvas/10 backdrop-blur-md border border-canvas/20 hover:bg-primary hover:border-primary transition-all p-2.5">
+                            <img src="/assets/save.png" alt="Save" class="w-full h-full object-contain invert" />
+                        </button>
+                        <a href="#" class="w-10 h-10 rounded-full bg-canvas/10 backdrop-blur-md border border-canvas/20 hover:bg-primary hover:border-primary transition-all p-2.5">
+                            <img src="/assets/right-up.png" alt="Launch" class="w-full h-full object-contain invert" />
+                        </a>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <h3 class="text-xl font-body tracking-tight">{site.title}</h3>
+                    
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full overflow-hidden border border-ink/10">
+                            <img src={site.authorImg} alt={site.author} class="w-full h-full object-cover" />
+                        </div>
+                        <a href="#" class="font-body font-black text-[10px] uppercase tracking-widest opacity-60 hover:text-primary transition-colors">
+                            {site.author}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        ))}
+    </div>
+</section>

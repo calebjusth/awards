@@ -1,0 +1,123 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = "Nominees | yet — Digital Excellence";
+const description = "Discover the finest digital experiences in Ethiopia. Filter by industry and tech stack.";
+
+// Mock Data with Developer Avatars
+const nominees = [
+  { 
+    title: "Kaleb's Studio", 
+    category: "Portfolio", 
+    tech: "React", 
+    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072",
+    devAvatar: "https://ui-avatars.com/api/?name=Caleb&background=FF5733&color=fff"
+  },
+  { 
+    title: "Zemen Bank UI", 
+    category: "Finance", 
+    tech: "Astro", 
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015",
+    devAvatar: "https://ui-avatars.com/api/?name=ZB&background=000&color=fff"
+  },
+  { 
+    title: "Ethio-Market", 
+    category: "E-commerce", 
+    tech: "Django", 
+    image: "https://images.unsplash.com/photo-1557821552-17105176677c?q=80&w=2089",
+    devAvatar: "https://ui-avatars.com/api/?name=EM&background=primary&color=fff"
+  },
+  { 
+    title: "Abyssinia Real Estate", 
+    category: "Real Estate", 
+    tech: "Webflow", 
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070",
+    devAvatar: "https://ui-avatars.com/api/?name=AR&background=333&color=fff"
+  }
+];
+
+const categories = ["All Categories", "Ecommerce", "Portfolio", "Real Estate", "Finance"];
+const techStacks = ["All Tech", "React", "Astro", "Webflow", "Django", "Next.js"];
+---
+
+<Layout title={title} description={description}>
+    <main class="site-frame py-24">
+        
+        <header class="mb-16">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-ink/10 pb-12">
+                <div>
+                    <h1 class="font-title text-8xl md:text-9xl leading-[0.8] mb-4">Nominees.</h1>
+                    <p class="font-body font-black text-[10px] uppercase text-primary">The Selection 2026</p>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="relative group">
+                        <select class="appearance-none bg-transparent border border-ink/10 px-6 py-4 pr-12 font-body font-bold text-[10px] uppercase cursor-pointer hover:border-primary transition-all outline-none">
+                            {categories.map(cat => <option>{cat}</option>)}
+                        </select>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                            <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="relative group">
+                        <select class="appearance-none bg-transparent border border-ink/10 px-6 py-4 pr-12 font-body font-bold text-[10px] uppercase cursor-pointer hover:border-primary transition-all outline-none">
+                            {techStacks.map(tech => <option>{tech}</option>)}
+                        </select>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                            <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {nominees.map((item) => (
+                <div class="group flex flex-col">
+                    <div class="relative aspect-[16/10] overflow-hidden border border-ink/5 bg-ink/[0.02]">
+                        <img 
+                            src={item.image} 
+                            alt={item.title} 
+                            class="w-full h-full object-covert" 
+                        />
+                        <div class="absolute top-6 left-6 bg-canvas border border-ink/10 px-3 py-1">
+                            <p class="font-body font-black text-[8px] uppercase ">{item.tech}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-8 flex items-start justify-between">
+                        <div class="flex items-center gap-5">
+                            <img src={item.devAvatar} alt="dev" class="w-12 h-12 grayscale group-hover:grayscale-0 transition-all border border-ink/10" />
+                            <div>
+                                <h3 class="font-title text-5xl leading-none mb-1">{item.title}</h3>
+                                <p class="font-body font-bold text-[10px] uppercase opacity-40">{item.category}</p>
+                            </div>
+                        </div>
+                        
+                        <a href="#" class="w-12 h-12 border border-ink/10 flex items-center justify-center hover:bg-ink hover:text-canvas transition-all">
+                            <img src="/assets/right-up.png" class="w-10 h-10 group-hover:invert" alt="view" />
+                        </a>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+        <nav class="mt-40 border-t border-ink/10 pt-16 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="flex items-center gap-4">
+                <span class="font-body font-black text-[10px] uppercase opacity-30 ">Records</span>
+                <span class="font-title text-4xl">01 — 12</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button class="px-8 py-4 border border-ink/10 font-body font-bold text-[10px] uppercase hover:bg-ink hover:text-canvas transition-all">Previous</button>
+                <div class="flex px-4 items-center gap-6">
+                    <span class="font-body text-2xl text-primary">01</span>
+                    <span class="font-body text-2xl opacity-20 hover:opacity-100 cursor-pointer">02</span>
+                    <span class="font-body text-2xl opacity-20 hover:opacity-100 cursor-pointer">03</span>
+                </div>
+                <button class="px-8 py-4 border border-ink/10 font-body font-bold text-[10px] uppercase bg-ink text-canvas hover:bg-primary transition-all">Next Page</button>
+            </div>
+        </nav>
+    </main>
+</Layout>

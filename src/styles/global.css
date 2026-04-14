@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Ferron';
+  src: url('/fonts/Ferron.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Google';
+  src: url('/fonts/Google.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-Bold.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --radius-yet: 4px;
+  /* Branding Colors */
+  --color-canvas: #FDF7E2;    /* Banana Yellow BG */
+  --color-primary: #FF6347;   /* Tangerine */
+  --color-accent: #A0D6B4;    /* Mint */
+  --color-ink: #1A1A1A;       /* Deep Charcoal for readability */
+
+  /* Typography - Mapping your custom fonts */
+  --font-title: "Ferron", sans-serif;
+  --font-am: "Google", sans-serif;
+  --font-body: "Satoshi", sans-serif;
+
+  /* Global Scaling - Defining specific sizes here so they stay consistent */
+  --text-giant: 15vw;         /* For that massive "YET" background text */
+  --text-header: 5rem;        /* Primary page headers */
+  --text-subheader: 2.5rem;   /* Section titles */
+  --text-body: 1.25rem;       /* Larger, bolder body font as requested */
+  --text-meta: 0.875rem;      /* Small labels/dates */
+  
+  /* Setting Global Boldness */
+  --font-weight-body: 700;
+  --font-weight-title: 900;
+}
+
+/* Base Styles */
+@layer base {
+  *:focus {
+    outline: none !important;
+  }
+  body {
+    @apply bg-canvas text-ink font-body font-bold antialiased;
+    font-size: var(--text-body);
+    line-height: 1.4;
+  }
+  button, input, .yet-button {
+    border-radius: var(--radius-yet);
+  }
+
+  h1, h2, h3, h4, h5, h6 .font-title {
+    @apply font-title leading-[1.1]  uppercase;
+  }
+
+  /* Your "Wall" color is applied globally */
+  html {
+    background-color: var(--color-canvas);
+  }
+}
+
+/* Utility Classes for easy use in Astro */
+@layer utilities {
+  .text-yet-giant {
+    font-size: var(--text-giant);
+    font-family: var(--font-title);
+  }
+
+  .site-frame {
+    @apply px-6 md:px-12 max-w-[1600px] mx-auto;
+  }
+  
+  .text-yet-header {
+    font-size: var(--text-header);
+    color: var(--color-primary);
+  }
+
+  /* Artistic Glass Card */
+  .glass-card {
+    @apply backdrop-blur-xl border border-ink/10;
+    border-radius: var(--radius-yet);
+  }
+
+  /* Footer Shape Animation */
+  @keyframes slow-drift {
+    0% { transform: translate(0, 0); }
+    50% { transform: translate(20px, -20px); }
+    100% { transform: translate(0, 0); }
+  }
+  .animate-drift {
+    animation: slow-drift 10s ease-in-out infinite;
+  }
+}

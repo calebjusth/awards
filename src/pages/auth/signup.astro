@@ -1,0 +1,62 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Join the Vanguard | yet">
+    <main class="site-frame min-h-[90vh] flex flex-col items-center justify-center">
+        <div class="w-full max-w-md mx-auto">
+            
+            <div class="mb-12">
+                <span class="font-body uppercase tracking-[0.3em] text-primary">
+                    Registration
+                </span>
+            </div>
+
+            <header class="mb-10">
+                <h1 class="font-title text-6xl md:text-7xl leading-[0.8] mb-6">
+                    New <br/>
+                    <span class="text-primary">around</span> here?
+                </h1>
+                <p class="font-body opacity-70 max-w-[280px] leading-relaxed">
+                    Enter your email to request an access code. We'll get you set up in seconds.
+                </p>
+            </header>
+            
+            <form action="/verify" class="flex flex-col gap-10">
+                <div class="group flex flex-col gap-3">
+                    <label class="font-body  uppercase tracking-widest opacity-40 group-focus-within:opacity-100 transition-opacity">
+                        Email Address
+                    </label>
+                    <input 
+                        type="email" 
+                        placeholder="name@domain.com" 
+                        class="bg-transparent border-b-2 border-ink/10 py-2 outline-none focus:border-primary transition-colors font-body text-2xl placeholder:opacity-10" 
+                        required 
+                    />
+                </div>
+                
+                <button type="submit" class="bg-ink text-canvas py-6 px-8 font-body text-xs uppercase  hover:bg-primary transition-all duration-300 flex justify-between items-center group">
+                    <span>Send OTP</span>
+                    <span class="transform group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+            </form>
+
+            
+                <div class="mt-10 mb-10 flex flex-col md:flex-row md:items-baseline gap-4 md:gap-6">
+                    <span class="font-body text-[10px] uppercase  opacity-40 whitespace-nowrap">
+                        Already a member?
+                    </span>
+                    <a href="/auth/login" class="font-body text-2xl uppercase  text-ink hover:text-primary transition-colors flex items-center gap-2 group">
+                        <span>Log In</span>
+                        <img 
+                            src="/assets/right-up.png" 
+                            alt="" 
+                            class="h-[0.8em] w-auto transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" 
+                        />
+                    </a>
+                </div>
+           
+
+        </div>
+    </main>
+</Layout>
