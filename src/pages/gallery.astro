@@ -1,0 +1,130 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Mock data focusing on identity over titles
+const initialWorks = Array.from({ length: 20 }).map((_, i) => ({
+  id: i,
+  author: i % 2 === 0 ? "Helm Creatives" : "@kaleb_yohannes",
+  avatar: `https://i.pravatar.cc/150?u=${i}`,
+  thumbnail: `https://picsum.photos/seed/${i + 40}/1600/1000`,
+  isNominee: i % 5 === 0,
+}));
+---
+
+<Layout title="Gallery" description="The complete Gallery of Web design submissions to the yet vanguard.">
+    <main class="site-frame py-24 md:py-32">
+        <header class="mb-20 border-b border-ink/10 pb-12 flex flex-col md:flex-row justify-between items-end gap-8">
+            <div>
+                <h1 class="font-title text-7xl md:text-9xl leading-none mb-6">The Feed.</h1>
+                <p class="font-body font-black uppercase text-primary">Unfiltered Submissions</p>
+            </div>
+            
+            <div class="flex gap-6">
+                <button class="font-body font-black uppercase border-b-2 border-primary pb-1">Latest</button>
+                <button class="font-body font-black uppercase opacity-30 hover:opacity-100 transition-opacity pb-1">Top Voted</button>
+                <button class="font-body font-black uppercase opacity-30 hover:opacity-100 transition-opacity pb-1">Nominees</button>
+            </div>
+        </header>
+
+        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-20">
+            {initialWorks.map((work) => (
+                <article class="group cursor-crosshair">
+                    <div class="relative aspect-[16/10] overflow-hidden bg-ink/5 border border-ink/5">
+                        <img 
+                            src={work.thumbnail} 
+                            alt={`Work by ${work.author}`} 
+                            class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                            loading="lazy"
+                        />
+                        
+                        <div class="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                            <button class="bg-canvas text-ink px-6 py-3 font-body font-black uppercase hover:bg-primary hover:text-canvas transition-colors">Vote</button>
+                            <button class="bg-transparent border border-canvas text-canvas px-6 py-3 font-body font-black text-[10px] uppercase hover:bg-canvas hover:text-ink transition-colors">Nominate</button>
+                        </div>
+
+                        {work.isNominee && (
+                            <div class="absolute top-6 left-6 bg-primary text-canvas px-3 py-1 font-body font-black text-[8px] uppercase tracking-widest">
+                                Nominee
+                            </div>
+                        )}
+                    </div>
+
+                    <div class="mt-6 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full overflow-hidden border border-ink/10">
+                                <img src={work.avatar} alt={work.author} class="w-full h-full object-cover grayscale" />
+                            </div>
+                            <span class="font-body font-black text-[11px] uppercase group-hover:text-primary transition-colors italic">{work.author}</span>
+                        </div>
+                        <div class="w-6 h-[1px] bg-ink/10 group-hover:w-12 group-hover:bg-primary transition-all duration-500"></div>
+                    </div>
+                </article>
+            ))}
+        </div>
+
+        <footer class="mt-32 pt-24 border-t border-ink/10 flex justify-center">
+            <button id="load-more" class="group relative flex flex-col items-center gap-4">
+                <span class="font-body font-black text-[10px] uppercase tracking-[0.5em] group-hover:text-primary transition-colors">Load More</span>
+                <div class="w-12 h-12 border border-ink/10 flex items-center justify-center p-3 group-hover:border-primary transition-colors">
+                    <img src="/assets/right-up.png" class="w-full h-full object-contain rotate-90" alt="down arrow" />
+                </div>
+            </button>
+        </footer>
+    </main>
+</Layout>
+
+<script>
+    let currentOffset = 20;
+    const loadMoreBtn = document.getElementById('load-more');
+    const grid = document.getElementById('gallery-grid');
+
+    loadMoreBtn?.addEventListener('click', async () => {
+        loadMoreBtn.style.opacity = '0.5';
+        loadMoreBtn.innerText = 'Loading...';
+
+        try {
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            const fragment = document.createDocumentFragment();
+            
+            for (let i = 0; i < 10; i++) {
+                const authorName = i % 2 === 0 ? "Helm Studio" : "@developer";
+                const newWork = document.createElement('article');
+                newWork.className = 'group cursor-crosshair opacity-0 translate-y-8 transition-all duration-700';
+                newWork.innerHTML = `
+                    <div class="relative aspect-[16/10] overflow-hidden bg-ink/5 border border-ink/5">
+                        <img src="https://picsum.photos/seed/${currentOffset + i}/1600/1000" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" loading="lazy" />
+                        <div class="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                            <button class="bg-canvas text-ink px-6 py-3 font-body font-black uppercase">Vote</button>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full overflow-hidden border border-ink/10">
+                                <img src="https://i.pravatar.cc/150?u=${currentOffset + i}" class="w-full h-full object-cover grayscale" />
+                            </div>
+                            <span class="font-body font-black text-[11px] uppercase group-hover:text-primary transition-colors italic">${authorName}</span>
+                        </div>
+                        <div class="w-6 h-[1px] bg-ink/10 group-hover:w-12 group-hover:bg-primary transition-all duration-500"></div>
+                    </div>
+                `;
+                fragment.appendChild(newWork);
+                setTimeout(() => newWork.classList.remove('opacity-0', 'translate-y-8'), i * 80);
+            }
+
+            grid?.appendChild(fragment);
+            currentOffset += 10;
+
+            loadMoreBtn.style.opacity = '1';
+            loadMoreBtn.innerHTML = `
+                <span class="font-body font-black text-[10px] uppercase tracking-[0.5em]">Load More</span>
+                <div class="w-12 h-12 border border-ink/10 flex items-center justify-center p-3 group-hover:border-primary">
+                    <img src="/assets/right-up.png" class="w-full h-full object-contain rotate-90" alt="down arrow" />
+                </div>
+            `;
+            
+        } catch (error) {
+            console.error('Failed to load more projects', error);
+        }
+    });
+</script>

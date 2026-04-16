@@ -1,0 +1,111 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const yearWinner = {
+  title: "Aura Morphosis",
+  developer: "Helm Creatives",
+  category: "Immersive Narrative",
+  year: "2025",
+  image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564",
+  description: "Recognized for pioneering a new era of fluid typography and spatial navigation."
+};
+
+const weekWinners = [
+  { title: "Kinetica", dev: "@studio_x", date: "Week 14", img: "https://picsum.photos/seed/w1/1200/800" },
+  { title: "Oasis UI", dev: "Nova Digital", date: "Week 13", img: "https://picsum.photos/seed/w2/1200/800" },
+  { title: "The Void", dev: "@dark_mode", date: "Week 12", img: "https://picsum.photos/seed/w3/1200/800" },
+  { title: "Ether", dev: "Flux Agency", date: "Week 11", img: "https://picsum.photos/seed/w4/1200/800" },
+];
+
+const winnersSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "yet Design Awards Winners",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "item": {
+        "@type": "CreativeWork",
+        "name": yearWinner.title,
+        "award": `Best Web Design of the Year ${yearWinner.year}`,
+        "author": { "@type": "Organization", "name": yearWinner.developer }
+      }
+    }
+  ]
+};
+---
+
+<Layout title="Winners Circle | yet" description="The vanguard of digital excellence. Explore the Site of the Year and Site of the Week winners.">
+    <script type="application/ld+json" set:html={JSON.stringify(winnersSchema)} />
+
+    <main class="site-frame py-24">
+        <section class="mb-40">
+            <header class="mb-16 border-b border-ink/5 pb-8 flex justify-between items-end">
+                <div>
+                    <p class="font-body font-black text-[10px] uppercase text-primary mb-4">The Highest Honor</p>
+                    <h1 class="font-title text-5xl md:text-7xl">Grand Prix.</h1>
+                </div>
+                <span class="font-title text-8xl md:text-[12rem] leading-none">{yearWinner.year}</span>
+            </header>
+
+            <div class="group relative aspect-[21/9] w-full overflow-hidden bg-ink/5 border border-ink/5">
+                <img src={yearWinner.image} alt={yearWinner.title} class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105" />
+                
+                <div class="absolute inset-0 bg-linear-to-t from-ink/80 via-transparent to-transparent flex flex-col justify-end p-8 md:p-16">
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                        <div>
+                            <h2 class="font-title text-6xl md:text-9xl text-canvas leading-none mb-4">{yearWinner.title}</h2>
+                            <p class="font-body text-canvas/60 max-w-xl text-lg italic">{yearWinner.description}</p>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right">
+                                <p class="font-body font-black text-[10px] uppercase text-primary">Studio</p>
+                                <p class="font-body text-canvas text-xl">{yearWinner.developer}</p>
+                            </div>
+                            <div class="w-16 h-16 rounded-full border border-canvas/20 flex items-center justify-center p-4">
+                                <img src="/assets/right-up.png" class="w-full h-full invert" alt="link" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <header class="mb-16 border-b border-ink/5 pb-8">
+                <h2 class="font-title text-5xl">Weekly Selection.</h2>
+                <p class="font-body font-black text-[10px] uppercase opacity-40 mt-2">Consistent Excellence in Craft</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px  border border-ink/10">
+                {weekWinners.map((site) => (
+                    <article class="group bg-canvas p-8 flex flex-col justify-between aspect-square hover:bg-ink transition-colors duration-500">
+                        <div>
+                            <div class="flex justify-between items-start mb-12">
+                                <span class="font-body font-black text-[9px] uppercase opacity-40 group-hover:text-primary transition-colors">{site.date}</span>
+                                <div class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <img src="/assets/right-up.png" class="w-full h-full group-hover:invert" alt="arrow" />
+                                </div>
+                            </div>
+                            
+                            <h3 class="font-title text-4xl mb-2 group-hover:text-canvas transition-colors">{site.title}</h3>
+                            <p class="font-body text-[10px] uppercase font-black opacity-30 group-hover:text-canvas/40">{site.dev}</p>
+                        </div>
+
+                        <div class="mt-8 h-0 overflow-hidden group-hover:h-32 transition-all duration-500">
+                            <img src={site.img} alt={site.title} class="w-full h-full object-cover grayscale" />
+                        </div>
+                    </article>
+                ))}
+            </div>
+        </section>
+
+        <footer class="mt-40 py-24 border-t border-ink/10 text-center">
+            <h3 class="font-title text-5xl md:text-7xl mb-8">Your work belongs<br/>in this circle.</h3>
+            <a href="/submit" class="inline-block bg-primary text-canvas px-12 py-6 font-body font-black text-xs uppercase transition-transform hover:scale-110">
+                Submit Your Project
+            </a>
+        </footer>
+    </main>
+</Layout>

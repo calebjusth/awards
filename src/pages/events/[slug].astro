@@ -1,0 +1,165 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { events } from '../../data/events';
+
+export async function getStaticPaths() {
+  return events.map((event) => ({ params: { slug: event.slug } }));
+}
+
+const event = events.find((item) => item.slug === Astro.params.slug);
+
+if (!event) {
+  throw new Error('Event not found');
+}
+
+const otherEvents = events.filter((item) => item.slug !== event.slug).slice(0, 2);
+
+const eventSchema = {
+  "@context": "https://schema.org",
+  "@type": "Event",
+  "name": event.title,
+  "startDate": `${event.date}T${event.time}`,
+  "location": {
+    "@type": "Place",
+    "name": event.venue,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": event.location,
+      "addressCountry": "ET"
+    }
+  },
+  "image": [event.poster],
+  "description": event.summary
+};
+---
+
+<Layout title={`${event.title} — yet`} description={event.summary}>
+    <script type="application/ld+json" set:html={JSON.stringify(eventSchema)} />
+
+    <main class="site-frame px-4 md:px-8">
+        <header class="pt-20 md:pt-32 pb-12 md:pb-16 border-b border-ink/5">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                <div class="max-w-5xl">
+                    <div class="flex items-center gap-4 mb-6 md:mb-8">
+                        <span class="w-8 md:w-12 h-[1px] bg-primary"></span>
+                        <span class="font-body font-black text-xl md:text-[30px] uppercase text-accent leading-none">
+                            {event.isFree ? 'Free Access' : event.priceLabel}
+                        </span>
+                    </div>
+                    <h1 class="font-title text-[18vw] lg:text-[12vw] leading-[0.85] mb-6 md:mb-8 break-words ">
+                        {event.title}
+                    </h1>
+                    <p class="font-body text-xl md:text-4xl leading-tight opacity-90 max-w-3xl italic">
+                        {event.subtitle}
+                    </p>
+                </div>
+                
+                <div class="flex lg:block items-baseline gap-4 text-left lg:text-right pb-4 border-t lg:border-none border-ink/5 pt-6 lg:pt-0">
+                    <p class="font-title text-4xl md:text-5xl lg:mb-2">{event.date.split('-')[2]}</p>
+                    <p class="font-body font-black  uppercase  leading-none ">
+                        {new Date(event.date).toLocaleDateString('en-US', { month: 'long' })}
+                    </p>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 border-b border-ink/5 py-8 gap-y-10 gap-x-4">
+            <div>
+                <p class="font-body font-black text-[15px] uppercase opacity-80 mb-2 ">Location</p>
+                <p class="font-body text-xs md:text-sm font-bold uppercase">{event.venue}</p>
+            </div>
+            <div>
+                <p class="font-body font-black text-[15px] uppercase opacity-80 mb-2 ">Time</p>
+                <p class="font-body text-xs md:text-sm font-bold uppercase">{event.time}</p>
+            </div>
+            <div class="hidden md:block">
+                <p class="font-body font-black text-[15px] uppercase opacity-80 mb-2 ">Curated By</p>
+                <p class="font-body text-xs md:text-sm font-bold uppercase">yet Editorial</p>
+            </div>
+            <div class="col-span-2 lg:col-span-1 flex lg:justify-end items-center mt-4 lg:mt-0">
+                <a href={event.ticketLink} class="w-full lg:w-auto text-center bg-accent text-black px-10 py-5 font-body font-black  uppercase transition-transform active:scale-95">
+                    Register Now
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20 py-16 md:py-24 items-start">
+            
+            <div class="lg:col-span-7 lg:sticky lg:top-32">
+                <div class="aspect-[4/5] overflow-hidden ">
+                    <img src={event.poster} alt={event.title} class="w-full h-full object-contain" />
+                </div>
+                <div class="mt-6 md:mt-8 flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x">
+                    {event.gallery.slice(0, 3).map((img) => (
+                        <img src={img} class="h-24 md:h-32 aspect-square object-cover cursor-crosshair snap-start flex-shrink-0" />
+                    ))}
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 space-y-20 md:space-y-24">
+                <section>
+                    <h2 class="font-title text-4xl md:text-5xl mb-6 md:mb-8">Concept.</h2>
+                    <p class="font-body text-lg md:text-xl leading-relaxed opacity-70 mb-6">{event.description}</p>
+                    <p class="font-body text-base md:text-lg leading-relaxed opacity-50">{event.summary}</p>
+                </section>
+
+                <section>
+                    <h2 class="font-title text-4xl md:text-5xl mb-10 md:mb-12">Program.</h2>
+                    <div class="space-y-10 md:space-y-12">
+                        {event.schedule.map((item) => (
+                            <div class="group border-t border-ink/10 pt-6 md:pt-8 flex flex-col sm:flex-row gap-4 sm:gap-8 items-start">
+                                <span class="font-body font-black text-[10px] uppercase text-primary sm:pt-2">{item.time}</span>
+                                <div>
+                                    <h3 class="font-body text-xl md:text-2xl mb-2">{item.title}</h3>
+                                    <p class="font-body text-sm opacity-50 leading-relaxed">{item.description}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="font-title text-4xl md:text-5xl mb-10 md:mb-12">Voices.</h2>
+                    <div class="grid grid-cols-1 gap-8 md:gap-12">
+                        {event.speakers.map((speaker) => (
+                            <div class="flex items-center gap-6">
+                                <img src={speaker.photo} alt={speaker.name} class="w-16 h-16 md:w-20 md:h-20 rounded-full grayscale object-cover" />
+                                <div>
+                                    <h4 class="font-body text-lg md:text-xl leading-none mb-1">{speaker.name}</h4>
+                                    <p class="font-body text-[10px] uppercase opacity-80 font-black ">{speaker.role}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                <section class="pt-12 border-t border-ink/10">
+                    <h2 class="font-body font-black uppercase ">Sponsors</h2>
+                    <div class="flex flex-wrap gap-x-8 md:gap-x-12 gap-y-8 grayscale opacity-70 hover:opacity-100 transition-opacity">
+                        {event.partners.map((p) => (
+                            <img src={p.logo} alt={p.name} class="h-8 md:h-12 object-contain" />
+                        ))}
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <section class="py-20 md:py-32 border-t border-ink/5">
+            <h2 class="font-title text-[12vw] md:text-[8vw] mb-12 md:mb-16 leading-none ">Similar<br class="hidden md:block"/>Events.</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-ink/10 border border-ink/10">
+                {otherEvents.map((item) => (
+                    <a href={`/events/${item.slug}`} class="group bg-canvas p-8 md:p-12 hover:bg-ink transition-colors duration-500">
+                        <span class="font-body font-black text-[9px] uppercase text-primary mb-4 block md:opacity-0 group-hover:opacity-100 transition-opacity">Discover Event</span>
+                        <h3 class="font-title text-3xl md:text-5xl text-ink group-hover:text-canvas transition-colors ">{item.title}</h3>
+                        <p class="font-body  text-ink/40 group-hover:text-canvas/40 mt-6 line-clamp-2 md:line-clamp-none">{item.summary}</p>
+                    </a>
+                ))}
+            </div>
+        </section>
+    </main>
+</Layout>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

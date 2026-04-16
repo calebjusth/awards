@@ -1,0 +1,112 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { events } from '../data/events';
+
+// SEO: Generate JSON-LD for Search Engines
+const eventSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": events.map((event, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "item": {
+      "@type": "Event",
+      "name": event.title,
+      "startDate": `${event.date}T${event.time}`,
+      "location": {
+        "@type": "Place",
+        "name": event.venue,
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": event.location,
+          "addressCountry": "ET"
+        }
+      },
+      "image": [event.image],
+      "description": event.summary,
+      "offers": {
+        "@type": "Offer",
+        "price": event.price,
+        "priceCurrency": "ETB",
+        "availability": "https://schema.org/InStock"
+      }
+    }
+  }))
+};
+---
+
+<Layout title="Events | yet — Digital Symposiums & Mixers" description="Join the vanguard. Explore upcoming tech events, design workshops, and digital award galas in Addis Ababa.">
+    <script type="application/ld+json" set:html={JSON.stringify(eventSchema)} />
+
+    <main class="site-frame py-24 md:py-32">
+        <header class="mb-24 border-b border-ink/10 pb-12">
+            <h1 class="font-title text-7xl md:text-[10rem] leading-none mb-6">Upcoming <br/>Events & Moments.</h1>
+            <p class="font-body font-black text-[10px] uppercase text-primary">Live Gatherings & Technical Symposiums</p>
+        </header>
+
+        <div class="flex flex-col gap-32">
+            {events.map((event) => (
+                <section class="group grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16 items-start">
+                    <div class="lg:col-span-7 aspect-16/10 overflow-hidden bg-ink/5 border border-ink/5">
+                        <img 
+                            src={event.image} 
+                            alt={event.title} 
+                            class="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                        />
+                    </div>
+
+                    <div class="lg:col-span-5 flex flex-col h-full justify-between py-4">
+                        <div>
+                            <div class="flex justify-between items-start mb-8">
+                                <div class="flex flex-col">
+                                    <span class="font-body font-black text-[10px] uppercase opacity-40">Date / Time</span>
+                                    <span class="font-body text-xl font-bold">{new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — {event.time}</span>
+                                </div>
+                                {event.isFree && (
+                                    <span class="bg-accent text-black px-4 py-1 font-body font-black text-[10px] uppercase tracking-widest">
+                                        Free Entry
+                                    </span>
+                                )}
+                            </div>
+
+                            <h2 class="font-title text-5xl md:text-7xl leading-none mb-8 group-hover:text-primary transition-colors">
+                                {event.title}
+                            </h2>
+
+                            <p class="font-body text-lg opacity-60 leading-relaxed mb-8 line-clamp-3">
+                                {event.description}
+                            </p>
+
+                            <div class="flex items-center gap-3 mb-12">
+                                <img src="/assets/location.png" class="w-5 h-5 object-contain opacity-40" alt="icon" />
+                                <span class="font-body font-black text-[10px] uppercase tracking-wider opacity-60">{event.location}</span>
+                            </div>
+                        </div>
+
+                        <a href={`/events/${event.slug}`} class="group/btn flex items-center justify-between border border-ink/10 px-8 py-6 hover:bg-ink hover:text-canvas transition-all">
+                            <span class="font-body font-black text-xs uppercase tracking-[0.3em]">Discover event details</span>
+                            <div class="w-6 h-6 flex items-center justify-center group-hover/btn:rotate-45 transition-transform">
+                                <img src="/assets/right-up.png" class="w-full h-full object-contain group-hover:invert" alt="arrow" />
+                            </div>
+                        </a>
+                    </div>
+                </section>
+            ))}
+        </div>
+
+        <footer class="mt-40 pt-24 border-t border-ink/10 text-center">
+            <h3 class="font-title text-4xl mb-8">Want to host an event with us?</h3>
+            <a href="mailto:events@yet.com" class="font-body font-black text-[10px] uppercase tracking-widest border-b-2 border-primary pb-1">Inquire for Collaboration</a>
+        </footer>
+    </main>
+</Layout>
+
+<style>
+    /* line-clamp-3 ensures the description cuts off at 3 lines for clean editorial look */
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
