@@ -44,22 +44,22 @@ const faqSchema = {
 };
 ---
 
-<Layout title="FAQ | yet — Technical Knowledge Base" description="Frequently asked questions about the yet digital awards, jury selection, and submission process for developers in Ethiopia.">
+<Layout title="FAQs" description="Frequently asked questions about the Wabi.">
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 
     <main class="site-frame py-24 md:py-32">
-        <header class="mb-16 md:mb-24 border-b border-ink/10 pb-12 md:pb-16">
-            <h1 class="font-title text-7xl md:text-[10rem] leading-none mb-8">FAQ.</h1>
-            <p class="font-body font-black text-[10px] uppercase text-primary">Technical Knowledge Base & Guidelines</p>
+        <header class="mb-16 md:mb-24 border-b border-muted pb-12 md:pb-16">
+            <h1 class="heading-1 mb-8">FAQ.</h1>
+            <p class="eyebrow">Technical Knowledge Base & Guidelines</p>
         </header>
 
         <div class="flex flex-col lg:flex-row gap-16 md:gap-20">
             <aside class="lg:w-1/3 lg:sticky lg:top-32 h-fit order-2 lg:order-1">
-                <span class="font-body font-black text-[10px] uppercase opacity-30 mb-6 md:mb-8 block">Select Category</span>
+                <span class="eyebrow mb-6 md:mb-8 block">Select Category</span>
                 <nav class="flex flex-wrap lg:flex-col items-start gap-4 md:gap-6">
                     {categories.map((cat) => (
                         <button 
-                            class="faq-nav-btn font-body text-3xl md:text-5xl hover:text-primary transition-colors text-ink/20 data-[active=true]:text-ink"
+                            class="faq-nav-btn section-heading hover:text-primary transition-colors text-muted data-[active=true]:text-ink"
                             data-category={cat}
                             data-active={cat === "All"}
                         >
@@ -74,7 +74,7 @@ const faqSchema = {
                     <div class="faq-section" data-section={section.category}>
                         <div class="flex items-center gap-4 mb-8">
                              <div class="h-px w-8 bg-primary"></div>
-                             <h3 class="font-body font-black text-[10px] uppercase text-primary">
+                             <h3 class="eyebrow">
                                 {section.category} Archive
                             </h3>
                         </div>
@@ -82,14 +82,14 @@ const faqSchema = {
                         <div class="flex flex-col border-t border-ink/10">
                             {section.questions.map((item) => (
                                 <details class="group border-b border-ink/10 cursor-pointer overflow-hidden">
-                                    <summary class="flex justify-between items-center py-6 md:py-8 list-none group-hover:bg-ink/[0.02] px-2 md:px-4 transition-colors">
-                                        <h4 class="font-body text-xl md:text-3xl pr-8 leading-tight">{item.q}</h4>
-                                        <div class="shrink-0 w-10 h-10 border border-ink/10 flex items-center justify-center group-open:rotate-45 transition-transform duration-300">
+                                    <summary class="flex justify-between items-center py-6 md:py-8 list-none group-hover:bg-muted px-2 md:px-4 transition-colors">
+                                        <h4 class="accordion-title pr-8">{item.q}</h4>
+                                        <div class="shrink-0 w-10 h-10 border border-muted flex items-center justify-center group-open:rotate-45 transition-transform duration-300">
                                             <span class="font-body text-xl">+</span>
                                         </div>
                                     </summary>
                                     <div class="px-2 md:px-4 pb-10 md:pb-12 pt-4">
-                                        <p class="font-body text-base md:text-lg opacity-60 max-w-xl leading-relaxed">
+                                        <p class="accordion-copy text-muted max-w-xl">
                                             {item.a}
                                         </p>
                                     </div>

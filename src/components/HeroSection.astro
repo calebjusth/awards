@@ -16,18 +16,18 @@ const siteImage = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?
 
 <section class="relative w-full min-h-[180vh] flex flex-col pt-32 site-frame">
     
-    <div class="flex flex-col md:flex-row justify-between items-end border-b-2 border-ink/10 pb-8 mb-12">
+    <div class="flex flex-col md:flex-row justify-between items-end border-b-2 border-muted pb-8 mb-12">
         <div class="flex flex-col gap-2">
-            <span class="text-primary font-body text-xs tracking-[0.3em]">SITE OF THE WEEK</span>
-            <h1 class="text-7xl md:text-[12vw] font-title leading-[0.85]">{siteName}</h1>
+            <span class="text-primary font-body text-caption">Site of the Day</span>
+            <h1 class="font-title text-4xl">{siteName}</h1>
         </div>
         
         <div class="flex flex-col items-end gap-2 mt-8 md:mt-0">
-             <div class="bg-accent text-ink px-4 py-1 text-4xl font-title rounded-sm">
+             <div class="bg-primary text-canvas px-4 py-1 text-4xl font-title rounded-sm">
                 {score}
             </div>
-            <p class="font-body font-bold text-sm tracking-widest opacity-60 uppercase text-right leading-tight">
-                BY {agency}<br/>
+            <p class="font-body text-caption text-ink text-right">
+                By {agency}<br/>
                 {formattedDate}
             </p>
         </div>
@@ -35,11 +35,11 @@ const siteImage = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?
 
     <div class="relative w-full group cursor-pointer">
         
-        <a href="#" class="absolute top-10 right-10 z-30 bg-canvas text-ink w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center border-2 border-ink/10 hover:bg-primary hover:text-canvas hover:scale-110 transition-all duration-500  group">
+        <a href="#" class="absolute top-10 right-10 z-30 bg-canvas text-ink w-20 h-20 md:w-32 md:h-32 rounded-full flex items-center justify-center border-2 border-muted hover:bg-primary hover:text-canvas hover:scale-110 transition-all duration-500  group">
             <i class="fa-solid fa-arrow-up-right text-3xl md:text-5xl -rotate-45"></i>
         </a>
 
-        <div class="w-full h-auto overflow-hidden border-2 border-ink/10 rounded-sm bg-ink/5">
+        <div class="w-full h-auto overflow-hidden border-2 border-muted rounded-sm">
             <img 
                 src={siteImage} 
                 alt={siteName}

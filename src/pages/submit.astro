@@ -1,15 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const title = "Submit Work | yet — Indexing the Vanguard";
+const title = "Submit Work";
 const description = "Submit your digital project to the yet selection. For developers, by developers.";
 ---
 
 <Layout title={title} description={description}>
     <main class="site-frame py-24 md:py-32">
-        <header class="mb-20 border-b border-ink/10 pb-12">
-            <h1 class="font-title text-7xl md:text-9xl leading-none mb-6">Submit Your<br/>Work.</h1>
-            <p class="font-body font-black  uppercase text-primary">Submission Portal</p>
+        <header class="mb-20 border-b border-muted pb-12">
+            <h1 class="heading-1 mb-6">Submit Your<br/>Work.</h1>
+            <p class="eyebrow">Submission Portal</p>
         </header>
 
         <form id="submission-form" class="max-w-5xl">
@@ -17,66 +17,66 @@ const description = "Submit your digital project to the yet selection. For devel
                 
                 <div class="flex flex-col gap-12">
                     <section>
-                        <label class="font-body font-black  uppercase opacity-80 mb-4 block">Project Title</label>
-                        <input type="text" placeholder="e.g. ABYSSINIA BAKERY" class="w-full bg-transparent border-b-2 border-ink/10 py-4 font-title text-4xl focus:border-primary focus:outline-none transition-colors" required />
+                        <label class="form-label">Project Title</label>
+                        <input type="text" placeholder="e.g. ABYSSINIA BAKERY" class="form-input" required />
                     </section>
 
                     <section>
-                        <label class="font-body font-black  uppercase opacity-80 mb-4 block">Live URL</label>
-                        <input type="url" placeholder="https://yourproject.com" class="w-full bg-transparent border-b-2 border-ink/10 py-4 font-body text-xl focus:border-primary focus:outline-none transition-colors" required />
+                        <label class="form-label">Live URL</label>
+                        <input type="url" placeholder="https://yourproject.com" class="form-input" required />
                     </section>
 
                     <section>
-                        <label class="font-body font-black  uppercase opacity-80 mb-4 block">Tech Stack</label>
-                        <input type="text" placeholder="Astro, Tailwind, GSAP" class="w-full bg-transparent border-b-2 border-ink/10 py-4 font-body text-xl focus:border-primary focus:outline-none transition-colors" />
+                        <label class="form-label">Tech Stack</label>
+                        <input type="text" placeholder="Astro, Tailwind, GSAP" class="form-input" />
                     </section>
 
                     <section>
-                        <label class="font-body font-black  uppercase opacity-80 mb-4 block">Brand Hex Code</label>
+                        <label class="form-label">Brand Hex Code</label>
                         <div class="flex items-center gap-4">
-                            <input type="text" value="#D4AF37" id="hex-input" class="w-full bg-transparent border-b-2 border-ink/10 py-4 font-title text-2xl focus:border-primary focus:outline-none transition-colors" />
-                            <div id="color-preview" class="w-12 h-12 border border-ink/10" style="background-color: #D4AF37;"></div>
+                            <input type="text" value="#D4AF37" id="hex-input" class="form-input" />
+                            <div id="color-preview" class="w-12 h-12 border border-muted" style="background-color: #D4AF37;"></div>
                         </div>
                     </section>
                 </div>
 
                 <div class="flex flex-col gap-12">
                     <section>
-                        <label class="font-body font-black  uppercase opacity-80 mb-4 block">Project Thumbnail (16:10)</label>
-                        <div id="drop-zone" class="relative group aspect-video border-2 border-dashed border-ink/10 hover:border-primary transition-all flex justify-center items-center cursor-pointer bg-ink/[0.02]">
+                        <label class="form-label">Project Thumbnail (16:10)</label>
+                        <div id="drop-zone" class="relative group aspect-video border-2 border-dashed border-muted hover:border-primary transition-all flex justify-center items-center cursor-pointer bg-muted/10">
                             <input type="file" id="file-input" class="hidden" accept="image/*" />
                             <div id="preview-container" class="absolute inset-0 hidden pointer-events-none">
                                 <img id="image-preview" src="#" class="w-full h-full object-cover" alt="Preview" />
-                                <div class="absolute inset-0 bg-ink/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span class="font-body font-black  uppercase text-canvas">Change Image</span>
+                                <div class="absolute inset-0 bg-muted flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span class="eyebrow text-canvas">Change Image</span>
                                 </div>
                             </div>
                             <div id="upload-prompt" class="text-center">
-                                <span class="font-body text-sm opacity-80">DRAG IMAGE OR CLICK TO BROWSE</span>
+                                <span class="text-small text-muted">DRAG IMAGE OR CLICK TO BROWSE</span>
                             </div>
                         </div>
                     </section>
 
                     <section>
-                        <label class="font-body font-black  uppercase opacity-80 mb-4 block">Collaborators (Must be on yet)</label>
+                        <label class="form-label">Collaborators (Must be on yet)</label>
                         <div class="relative">
-                            <input type="text" id="collab-search" placeholder="Search by username..." class="w-full bg-transparent border-b-2 border-ink/10 py-4 font-body text-xl focus:border-primary focus:outline-none transition-colors" />
-                            <div id="search-results" class="absolute z-10 w-full bg-canvas border border-ink/10 mt-2 hidden">
-                                <button type="button" class="w-full text-left p-4 hover:bg-ink hover:text-canvas font-body text-sm transition-colors border-b border-ink/5">@kaleb_yohannes</button>
-                                <button type="button" class="w-full text-left p-4 hover:bg-ink hover:text-canvas font-body text-sm transition-colors">@studio_251</button>
+                            <input type="text" id="collab-search" placeholder="Search by username..." class="form-input" />
+                            <div id="search-results" class="absolute z-10 w-full bg-canvas border border-muted mt-2 hidden">
+                                <button type="button" class="w-full text-left p-4 hover:bg-muted hover:text-ink text-small transition-colors border-b border-muted">@kaleb_yohannes</button>
+                                <button type="button" class="w-full text-left p-4 hover:bg-muted hover:text-ink text-small transition-colors">@studio_251</button>
                             </div>
                         </div>
                     </section>
                 </div>
             </div>
 
-            <div class="mt-24 pt-12 border-t border-ink/10 flex justify-between items-center">
-                <p class="font-body text-sm opacity-80 max-w-xs leading-tight">
+            <div class="mt-24 pt-12 border-t border-muted flex flex-col lg:flex-row justify-between items-center gap-8">
+                <p class="body-copy max-w-xs">
                     By submitting, you agree that this project is your original work.
                 </p>
-                <button type="submit" class="group flex items-center gap-6 bg-ink text-canvas px-12 py-6 font-body font-black text-lg uppercase tracking-widest hover:bg-primary transition-all">
+                <button type="submit" class="button-primary">
                     Finalize Submission
-                    <div class="w-10 h-10 border border-canvas/20 flex items-center justify-center p-2 group-hover:rotate-45 transition-transform duration-300">
+                    <div class="w-10 h-10 border border-muted flex items-center justify-center p-2 group-hover:rotate-45 transition-transform duration-300">
                         <img src="/assets/right-up.png" class="w-full h-full object-contain invert" alt="arrow" />
                     </div>
                 </button>
@@ -102,7 +102,7 @@ const description = "Submit your digital project to the yet selection. For devel
             
             fileInput.addEventListener('change', (e) => {
                 const target = e.target as HTMLInputElement;
-                const file = target.files ? target.files : null;
+                const file = target.files?.[0] ?? null;
                 
                 if (file) {
                     const reader = new FileReader();

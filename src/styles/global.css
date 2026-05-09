@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'Ferron';
-  src: url('/fonts/Ferron.otf') format('opentype');
+  font-family: 'Peace-sans';
+  src: url('/fonts/Peace-sans.ttf') format('truetype');
   font-weight: bold;
   font-style: normal;
   font-display: swap;
@@ -27,26 +27,31 @@
 @theme {
   --radius-yet: 4px;
   /* Branding Colors */
-  --color-canvas: #FDF7E2;    /* Banana Yellow BG */
-  --color-primary: #FF6347;   /* Tangerine */
-  --color-accent: #A0D6B4;    /* Mint */
-  --color-ink: #1A1A1A;       /* Deep Charcoal for readability */
+  --color-canvas: #F4EFE7;    /* Background color */
+  --color-primary: #2A0F12;   /* Main brand color */
+  --color-muted: #D8CFCB;     /* Muted color */
+  --color-ink: #1A1A1A;       /* Black brand color */
 
-  /* Typography - Mapping your custom fonts */
-  --font-title: "Ferron", sans-serif;
+  /* Typography*/
+  --font-title: "Peace-sans", sans-serif;
   --font-am: "Google", sans-serif;
   --font-body: "Satoshi", sans-serif;
 
-  /* Global Scaling - Defining specific sizes here so they stay consistent */
-  --text-giant: 15vw;         /* For that massive "YET" background text */
-  --text-header: 5rem;        /* Primary page headers */
-  --text-subheader: 2.5rem;   /* Section titles */
-  --text-body: 1.25rem;       /* Larger, bolder body font as requested */
-  --text-meta: 0.875rem;      /* Small labels/dates */
-  
-  /* Setting Global Boldness */
-  --font-weight-body: 700;
-  --font-weight-title: 900;
+/* Global Scaling - Minimalist, readable, balanced hierarchy */
+
+--text-h1: 1.8rem;   /* Main headers (calm, not oversized) */
+--text-h2: 1.5rem;   /* Section headers */
+--text-h3: 1.3rem;   /* Subsection headers */
+--text-h4: 1.15rem;  /* Smaller headers */
+--text-h5: 1.05rem;  /* Body-like headers */
+--text-h6: 0.95rem;  /* Micro headers */
+
+--text-body: 1rem;   /* Perfect baseline for readability */
+--text-caption: 0.85rem; /* Subtle, secondary info */
+
+/* Font Weights - Minimalist feel */
+--font-weight-body: 400;   /* Clean and light */
+--font-weight-title: 600;  
 }
 
 /* Base Styles */
@@ -55,7 +60,7 @@
     outline: none !important;
   }
   body {
-    @apply bg-canvas text-ink font-body font-bold antialiased;
+    @apply bg-canvas text-ink font-body font-normal antialiased;
     font-size: var(--text-body);
     line-height: 1.4;
   }
@@ -63,8 +68,45 @@
     border-radius: var(--radius-yet);
   }
 
-  h1, h2, h3, h4, h5, h6 .font-title {
-    @apply font-title leading-[1.1]  uppercase;
+  h1 {
+    @apply font-title;
+    font-size: var(--text-h1);
+    font-weight: var(--font-weight-title);
+    line-height: 1.1;
+  }
+  h2 {
+    @apply font-title;
+    font-size: var(--text-h2);
+    font-weight: var(--font-weight-title);
+    line-height: 1.1;
+  }
+  h3 {
+    @apply font-title;
+    font-size: var(--text-h3);
+    font-weight: var(--font-weight-title);
+    line-height: 1.1;
+  }
+  h4 {
+    @apply font-title;
+    font-size: var(--text-h4);
+    font-weight: var(--font-weight-title);
+    line-height: 1.1;
+  }
+  h5 {
+    @apply font-title;
+    font-size: var(--text-h5);
+    font-weight: var(--font-weight-title);
+    line-height: 1.1;
+  }
+  h6 {
+    @apply font-title;
+    font-size: var(--text-h6);
+    font-weight: var(--font-weight-title);
+    line-height: 1.1;
+  }
+
+  .font-title {
+    @apply font-title;
   }
 
   /* Your "Wall" color is applied globally */
@@ -75,24 +117,255 @@
 
 /* Utility Classes for easy use in Astro */
 @layer utilities {
-  .text-yet-giant {
-    font-size: var(--text-giant);
-    font-family: var(--font-title);
+  .text-caption {
+    font-size: var(--text-caption);
+  }
+
+  .section-title {
+    @apply font-title;
+    font-size: var(--text-h2);
+    line-height: 1.05;
   }
 
   .site-frame {
     @apply px-6 md:px-12 max-w-[1600px] mx-auto;
   }
   
-  .text-yet-header {
-    font-size: var(--text-header);
-    color: var(--color-primary);
+  /* Brand utility classes */
+  .text-primary { color: var(--color-primary); }
+  .text-ink { color: var(--color-ink); }
+  .text-muted { color: var(--color-muted); }
+
+  .bg-primary { background-color: var(--color-primary); }
+  .bg-muted { background-color: var(--color-muted); }
+  .bg-canvas { background-color: var(--color-canvas); }
+
+  .border-muted { border-color: var(--color-muted); }
+  .border-primary { border-color: var(--color-primary); }
+
+  .heading-1 {
+    @apply font-title;
+    font-size: var(--text-h1);
+    line-height: 1.05;
+    font-weight: var(--font-weight-title);
   }
 
-  /* Artistic Glass Card */
-  .glass-card {
-    @apply backdrop-blur-xl border border-ink/10;
+  .heading-2 {
+    @apply font-title;
+    font-size: var(--text-h2);
+    line-height: 1.1;
+    font-weight: var(--font-weight-title);
+  }
+
+  .section-heading {
+    @apply font-title;
+    font-size: var(--text-h3);
+    line-height: 1.1;
+    font-weight: var(--font-weight-title);
+  }
+
+  .body-copy {
+    font-size: var(--text-body);
+    line-height: 1.75;
+    color: var(--color-ink);
+  }
+
+  .text-small {
+    font-size: var(--text-caption);
+    line-height: 1.5;
+  }
+
+  .text-strong {
+    font-weight: var(--font-weight-title);
+  }
+
+  .accordion-title {
+    @apply font-title;
+    font-size: 1.5rem;
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  .accordion-copy {
+    font-size: var(--text-body);
+    line-height: 1.8;
+    color: var(--color-ink);
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--text-caption);
+    color: var(--color-ink);
+    text-transform: none;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    width: 100%;
+    border: 1px solid var(--color-muted);
     border-radius: var(--radius-yet);
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    padding: 1rem 1.1rem;
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .form-input:focus,
+  .form-select:focus,
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.25rem rgb(42 15 18 / 10%);
+    background: white;
+  }
+
+  .button-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-yet);
+    border: 1px solid transparent;
+    background: var(--color-primary);
+    color: var(--color-canvas);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: var(--text-body);
+    text-decoration: none;
+    transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .button-primary:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+  }
+
+  .button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-yet);
+    border: 1px solid var(--color-muted);
+    background: var(--color-muted);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--text-body);
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .button-secondary:hover {
+    background: var(--color-primary);
+    color: var(--color-canvas);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+  }
+
+  .button-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: var(--radius-yet);
+    border: 1px solid var(--color-ink);
+    background: transparent;
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--text-caption);
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+
+  .button-outline:hover {
+    background: var(--color-muted);
+    color: var(--color-ink);
+    transform: translateY(-1px);
+  }
+
+  .display-heading {
+    @apply font-title;
+    font-size: clamp(4rem, 8vw, 8rem);
+    line-height: 1;
+    font-weight: var(--font-weight-title);
+  }
+
+  .card-panel {
+    background: rgba(244, 239, 231, 0.95);
+    border: 1px solid var(--color-muted);
+    border-radius: var(--radius-yet);
+    box-shadow: 0 20px 60px rgba(26, 26, 26, 0.06);
+    padding: 2rem;
+  }
+
+  .form-footnote {
+    color: var(--color-muted);
+    font-size: var(--text-caption);
+    line-height: 1.6;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    color: var(--color-primary);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: var(--text-caption);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1.5;
+  }
+
+  .section-heading {
+    @apply font-title;
+    font-size: var(--text-h2);
+    line-height: 1.05;
+    font-weight: var(--font-weight-title);
+  }
+
+  .section-subtitle {
+    color: var(--color-ink);
+    font-size: var(--text-body);
+    line-height: 1.8;
+  }
+
+  .accent-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: var(--color-canvas);
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+
+  .link-secondary {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .link-secondary:hover {
+    text-decoration: underline;
+  }
+
+  .card-panel input::placeholder,
+  .card-panel textarea::placeholder {
+    color: var(--color-muted);
   }
 
   /* Footer Shape Animation */

@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const title = "Nominees | yet — Digital Excellence";
+const title = "Nominees";
 const description = "Discover the finest digital experiences in Ethiopia. Filter by industry and tech stack.";
 
 // Mock Data with Developer Avatars
@@ -44,15 +44,15 @@ const techStacks = ["All Tech", "React", "Astro", "Webflow", "Django", "Next.js"
     <main class="site-frame py-24">
         
         <header class="mb-16">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-ink/10 pb-12">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-muted pb-12">
                 <div>
-                    <h1 class="font-title text-8xl md:text-9xl leading-[0.8] mb-4">Nominees.</h1>
-                    <p class="font-body font-black text-[10px] uppercase text-primary">The Selection 2026</p>
+                    <h1 class="heading-1 mb-4">Nominees.</h1>
+                    <p class="eyebrow">The Selection 2026</p>
                 </div>
                 
-                <div class="flex gap-4">
+                <div class="flex gap-4 flex-wrap">
                     <div class="relative group">
-                        <select class="appearance-none bg-transparent border border-ink/10 px-6 py-4 pr-12 font-body font-bold text-[10px] uppercase cursor-pointer hover:border-primary transition-all outline-none">
+                        <select class="form-select pr-12">
                             {categories.map(cat => <option>{cat}</option>)}
                         </select>
                         <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
@@ -61,7 +61,7 @@ const techStacks = ["All Tech", "React", "Astro", "Webflow", "Django", "Next.js"
                     </div>
 
                     <div class="relative group">
-                        <select class="appearance-none bg-transparent border border-ink/10 px-6 py-4 pr-12 font-body font-bold text-[10px] uppercase cursor-pointer hover:border-primary transition-all outline-none">
+                        <select class="form-select pr-12">
                             {techStacks.map(tech => <option>{tech}</option>)}
                         </select>
                         <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
@@ -75,48 +75,45 @@ const techStacks = ["All Tech", "React", "Astro", "Webflow", "Django", "Next.js"
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {nominees.map((item) => (
                 <div class="group flex flex-col">
-                    <div class="relative aspect-[16/10] overflow-hidden border border-ink/5 bg-ink/[0.02]">
+                    <div class="relative aspect-[16/10] overflow-hidden border border-muted bg-muted/10">
                         <img 
                             src={item.image} 
                             alt={item.title} 
-                            class="w-full h-full object-covert" 
+                            class="w-full h-full object-cover" 
                         />
-                        <div class="absolute top-6 left-6 bg-canvas border border-ink/10 px-3 py-1">
-                            <p class="font-body font-black text-[8px] uppercase ">{item.tech}</p>
+                        <div class="absolute top-6 left-6">
+                            <span class="accent-tag">{item.tech}</span>
                         </div>
                     </div>
                     
                     <div class="pt-8 flex items-start justify-between">
                         <div class="flex items-center gap-5">
-                            <img src={item.devAvatar} alt="dev" class="w-12 h-12 grayscale group-hover:grayscale-0 transition-all border border-ink/10" />
+                            <img src={item.devAvatar} alt="dev" class="w-12 h-12 grayscale group-hover:grayscale-0 transition-all border border-muted" />
                             <div>
-                                <h3 class="font-title text-5xl leading-none mb-1">{item.title}</h3>
-                                <p class="font-body font-bold text-[10px] uppercase opacity-40">{item.category}</p>
+                                <h3 class="section-heading mb-1">{item.title}</h3>
+                                <p class="text-small text-muted">{item.category}</p>
                             </div>
                         </div>
                         
-                        <a href="#" class="w-12 h-12 border border-ink/10 flex items-center justify-center hover:bg-ink hover:text-canvas transition-all">
-                            <img src="/assets/right-up.png" class="w-10 h-10 group-hover:invert" alt="view" />
-                        </a>
-                    </div>
-                </div>
+                        <a href="#" class="button-outline w-12 h-12 p-0">
+                            <img src="/assets/right-up.png" class="w-10 h-10" alt="view" />
             ))}
         </div>
 
-        <nav class="mt-40 border-t border-ink/10 pt-16 flex flex-col md:flex-row items-center justify-between gap-8">
+        <nav class="mt-40 border-t border-muted pt-16 flex flex-col md:flex-row items-center justify-between gap-8">
             <div class="flex items-center gap-4">
-                <span class="font-body font-black text-[10px] uppercase opacity-30 ">Records</span>
-                <span class="font-title text-4xl">01 — 12</span>
+                <span class="eyebrow text-muted">Records</span>
+                <span class="section-heading">01 — 12</span>
             </div>
 
-            <div class="flex items-center gap-2">
-                <button class="px-8 py-4 border border-ink/10 font-body font-bold text-[10px] uppercase hover:bg-ink hover:text-canvas transition-all">Previous</button>
+            <div class="flex items-center gap-2 flex-wrap">
+                <button class="button-outline">Previous</button>
                 <div class="flex px-4 items-center gap-6">
-                    <span class="font-body text-2xl text-primary">01</span>
-                    <span class="font-body text-2xl opacity-20 hover:opacity-100 cursor-pointer">02</span>
-                    <span class="font-body text-2xl opacity-20 hover:opacity-100 cursor-pointer">03</span>
+                    <span class="section-heading text-primary">01</span>
+                    <span class="section-heading text-muted cursor-pointer">02</span>
+                    <span class="section-heading text-muted cursor-pointer">03</span>
                 </div>
-                <button class="px-8 py-4 border border-ink/10 font-body font-bold text-[10px] uppercase bg-ink text-canvas hover:bg-primary transition-all">Next Page</button>
+                <button class="button-primary">Next Page</button>
             </div>
         </nav>
     </main>
