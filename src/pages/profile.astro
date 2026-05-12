@@ -1,0 +1,124 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Placeholder Data - This would normally come from your slug/database
+const user = {
+  name: "Marcus Aurelius",
+  location: "Rome, Italy",
+  about: "Independent Digital Designer and Creative Developer focused on creating soulful digital experiences. Currently exploring the intersection of brutalist architecture and web interactions.",
+  avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+  isAvailable: true,
+  submissions: [
+    { title: "Ethereal Studio", category: "Portfolio", year: "2026", img: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=800" },
+    { title: "Mono Labs", category: "SaaS", year: "2025", img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800" },
+    { title: "Oasis Journal", category: "Blog", year: "2026", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800" },
+    { title: "Nexus VR", category: "Tech", year: "2024", img: "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&q=80&w=800" },
+    { title: "Prisma Arc", category: "Agency", year: "2026", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800" },
+    { title: "The Vault", category: "E-comm", year: "2025", img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=800" },
+  ],
+  sotd: [
+    { title: "Vanguard", date: "May 12, 2026" },
+    { title: "Echo Interface", date: "Jan 05, 2026" },
+  ]
+};
+---
+
+<Layout title={`${user.name} — Profile`}>
+  <main class="bg-canvas min-h-screen pt-24 pb-40">
+    <div class="site-frame">
+      
+      {/* 1. Header Section */}
+      <section class="flex flex-col md:flex-row items-start gap-12 mb-32">
+        <div class="relative">
+          <img 
+            src={user.avatar} 
+            alt={user.name} 
+            class="w-30 h-30 md:w-30 md:h-30 rounded-full grayscale object-cover border border-muted"
+          />
+          
+        </div>
+
+        <div class="max-w-2xl">
+          <span class="eyebrow mb-4">{user.location}</span>
+          <h1 class=" mb-6">{user.name}</h1>
+          <p class="body-copy text-xl text-ink/80 leading-relaxed italic">
+            "{user.about}"
+          </p>
+        </div>
+      </section>
+
+      {/* 2. Top Submissions Grid */}
+      <section class="mb-32">
+        <div class="flex justify-between items-end mb-12 border-b border-muted pb-6">
+          <h2 class="section-heading">Submissions</h2>
+          <span class="text-caption text-muted">06 / Total</span>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+          {user.submissions.map((site) => (
+            <div class="group cursor-pointer">
+              <div class="aspect-[4/3] overflow-hidden rounded-sm bg-muted mb-6 transition-transform duration-500 group-hover:-translate-y-2">
+                <img 
+                  src={site.img} 
+                  alt={site.title} 
+                  class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                />
+              </div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-title text-h4 mb-1">{site.title}</h3>
+                  <span class="text-caption text-muted uppercase tracking-wider">{site.category}</span>
+                </div>
+                <span class="font-body text-caption border border-muted px-2 py-1">{site.year}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. SOTD & Availability Status */}
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
+        
+        {/* SOTD List */}
+        <div>
+          <h2 class="section-heading mb-10">Site of the Day</h2>
+          <div class="divide-y divide-muted border-t border-muted">
+            {user.sotd.map((award) => (
+              <div class="py-8 flex justify-between items-center group cursor-default">
+                <h4 class="text-h3 group-hover:text-primary transition-colors">{award.title}</h4>
+                <span class="text-caption text-muted">{award.date}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Work with me / Availability */}
+        <div class="bg-ink p-12 md:p-16 rounded-sm text-canvas flex flex-col items-center text-center space-y-8">
+          <span class="text-caption uppercase tracking-[0.3em] opacity-60">Status</span>
+          <h2 class="font-title text-[2.5rem] leading-none">Open for new collaborations</h2>
+          <a href="mailto:hello@marcus.com" class="button-primary !bg-canvas !text-ink hover:!bg-primary hover:!text-canvas w-full md:w-auto">
+            Get in touch
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</Layout>
+
+<style>
+  /* Custom scroll behavior for the profile */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Specific overrides for muted text to be more readable on canvas background */
+  .text-muted {
+    color: #8c8480; 
+  }
+
+  /* Ensure the grayscale transition is buttery smooth */
+  img {
+    will-change: filter, transform;
+  }
+</style>
