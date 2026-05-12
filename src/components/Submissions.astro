@@ -1,93 +1,170 @@
 ---
+// RecentSites.astro
 const submissions = [
   {
     title: "ABYSSINIA BAKERY",
     author: "Kaleb Yohannes",
     authorImg: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100",
-    thumbnail: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=2072",
+    thumbnail: "https://assets.awwwards.com/awards/submissions/2026/04/69ef6833d82c4164300342.jpg",
   },
   {
     title: "ETHIO-TECH HUB",
     author: "Studio 251",
     authorImg: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=100",
-    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2026",
+    thumbnail: "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2026/02/69945c4e1576a352522808.jpg",
   },
   {
     title: "LUCY'S LEGACY",
     author: "Freelance Creative",
     authorImg: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=100",
-    thumbnail: "https://images.unsplash.com/photo-1519389428555-9809164732ff?q=80&w=2070",
+    thumbnail: "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2026/04/69dfefd719a9f068162403.jpg",
   },
   {
     title: "RED SEA LOGISTICS",
     author: "Nati Design",
     authorImg: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100",
-    thumbnail: "https://images.unsplash.com/photo-1586717791821-3f44a563dc4c?q=80&w=2070",
+    thumbnail: "https://assets.awwwards.com/awards/submissions/2026/03/69ca528a45842696920253.png",
   }
 ];
 ---
 
-<section class="site-frame py-32 border-t border-muted">
-    <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-        <div>
-            <h2 class="section-title">Submissions.</h2>
-            <p class="font-body text-caption text-primary mt-4">The Community Feed</p>
-        </div>
-        <p class="font-body text-caption text-ink max-w-[240px] text-right">
-            Curated excellence from the local vanguard.
-        </p>
+<section class="site-frame py-16 md:py-32 border-t border-muted">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-4 md:gap-6">
+    <div>
+      <h2 class="text-4xl font-title font-bold">Recent Sites<br class="hidden sm:block" /> of the Day.</h2>
+      <p class="font-body text-sm md:text-base text-primary mt-2 md:mt-4">The Community Feed</p>
     </div>
+    <p class="font-body text-xs md:text-sm text-ink/70 max-w-[240px] text-left md:text-right">
+      Curated excellence from the local vanguard.
+    </p>
+  </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-24">
-        {submissions.map((site) => (
-            <div class="group flex flex-col gap-8">
+  <!-- Horizontal Scroll Container -->
+  <div class="overflow-x-auto overflow-y-visible pb-6 md:pb-8 -mx-4 md:-mx-6 px-4 md:px-6 scrollbar-thin">
+    <div class="flex gap-6 md:gap-8 w-max">
+      {submissions.map((site) => (
+        <div class="flex flex-col gap-4 md:gap-5 w-[280px] sm:w-[320px] md:w-[360px] flex-shrink-0">
+          {/* Square Image Card with Actions at Bottom */}
+          <div class="relative aspect-square w-full overflow-hidden border border-muted bg-canvas">
+            <img 
+              src={site.thumbnail} 
+              alt={site.title} 
+              class="w-full h-full object-contain"
+            />
+
+            {/* Action Buttons Overlay - Bottom of the image - Justified between left and right */}
+            <div class="absolute bottom-0 left-0 right-0 p-3 md:p-5 bg-gradient-to-t from-black/70 via-black/40 to-transparent">
+              <div class="flex items-center justify-between gap-3 md:gap-4">
+                {/* Save Button - Left side */}
+                <button 
+                  class="w-9 h-9 md:w-11 md:h-11 rounded-full bg-canvas/90 backdrop-blur-sm text-ink border border-muted flex items-center justify-center"
+                  aria-label="Save"
+                >
+                  <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
+                </button>
                 
-                <div class="relative aspect-[16/10] overflow-hidden border border-muted bg-canvas rounded-sm">
-                    <img 
-                        src={site.thumbnail} 
-                        alt={site.title} 
-                        class="w-full h-full object-cover" 
-                    />
-
-                    <div class="absolute inset-0 hidden group-hover:flex flex-col items-center justify-center gap-4 bg-ink/95 text-canvas p-4">
-                        <div class="flex gap-4">
-                            <button class="w-16 h-16 rounded-full bg-ink text-canvas border border-muted flex items-center justify-center hover:bg-primary transition-all">
-                                <img src="/assets/save.png" alt="Save" class="w-6 h-6 object-contain" />
-                            </button>
-                            <a href="#" class="w-16 h-16 rounded-full bg-ink text-canvas border border-muted flex items-center justify-center hover:bg-primary transition-all">
-                                <img src="/assets/right-up.png" alt="Launch" class="w-6 h-6 object-contain" />
-                            </a>
-                        </div>
-                        <button class="rounded-sm bg-canvas text-ink px-6 py-3 font-body font-semibold hover:bg-primary hover:text-canvas transition-colors">
-                            Vote Now
-                        </button>
-                    </div>
-                </div>
-                <div class="mt-4 flex items-center justify-center gap-4 md:hidden">
-                    <button class="w-14 h-14 rounded-full bg-canvas text-canvas border border-muted flex items-center justify-center">
-                        <img src="/assets/save.png" alt="Save" class="w-6 h-6 object-contain" />
-                    </button>
-                    <a href="#" class="w-14 h-14 rounded-full bg-canvas text-canvas border border-muted flex items-center justify-center">
-                        <img src="/assets/right-up.png" alt="Launch" class="w-6 h-6 object-contain" />
-                    </a>
-                    <button class="rounded-sm bg-canvas text-ink px-6 py-3 font-body font-semibold  hover:text-canvas transition-colors">
-                        Vote Now
-                    </button>
-                    </div>
-                    
-                    <div class="flex items-center gap-4 pt-4 border-t border-muted">
-                        <div class="w-10 h-10 border border-muted overflow-hidden bg-canvas">
-                            <img src={site.authorImg} alt={site.author} class="w-full h-full object-cover" />
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="font-body text-caption text-muted">Submitted by</span>
-                            <a href="#" class="font-body text-caption font-semibold hover:underline decoration-primary underline-offset-4">
-                                {site.author}
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                {/* Launch Link - Right side */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  class="w-9 h-9 md:w-11 md:h-11 rounded-full bg-canvas/90 backdrop-blur-sm text-ink border border-muted flex items-center justify-center"
+                  aria-label="Launch Site"
+                >
+                  <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
             </div>
-        ))}
+          </div>
+
+          {/* Card Footer - One line with author only */}
+          <div class="flex items-center justify-between gap-2 pt-2 border-t border-muted">
+            <div class="flex items-center gap-2 md:gap-3 min-w-0">
+              <div class="w-6 h-6 md:w-7 md:h-7 rounded-full border border-muted overflow-hidden bg-canvas flex-shrink-0">
+                <img 
+                  src={site.authorImg} 
+                  alt={site.author} 
+                  class="w-full h-full object-cover grayscale" 
+                />
+              </div>
+              <span class="font-body text-xs md:text-sm text-ink/70 whitespace-nowrap">
+                by {site.author}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
+  </div>
 </section>
+
+<style is:global>
+  /* Ensure smooth scrolling on touch devices */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar-track {
+    background: #e5e7eb;
+    border-radius: 4px;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    border-radius: 4px;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+  
+  /* Dark mode support for scrollbar */
+  @media (prefers-color-scheme: dark) {
+    .overflow-x-auto::-webkit-scrollbar-track {
+      background: #374151;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+      background: #6b7280;
+    }
+  }
+  
+  /* Container padding utilities */
+  .site-frame {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  
+  @media (min-width: 640px) {
+    .site-frame {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .site-frame {
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+    }
+  }
+  
+  /* Utility classes */
+  .whitespace-nowrap {
+    white-space: nowrap;
+  }
+  
+  .min-w-0 {
+    min-width: 0;
+  }
+</style>

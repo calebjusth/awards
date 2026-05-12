@@ -2,139 +2,392 @@
 import Layout from '../layouts/Layout.astro';
 
 const title = "Submit Work";
-const description = "Submit your digital project to the yet selection. For developers, by developers.";
+const description = "Submit your digital project to the Wabi selection. For developers, by developers.";
 ---
 
 <Layout title={title} description={description}>
-    <main class="site-frame py-24 md:py-32">
-        <header class="mb-20 border-b border-muted pb-12">
-            <h1 class="heading-1 mb-6">Submit Your<br/>Work.</h1>
-            <p class="eyebrow">Submission Portal</p>
+    <main class="site-frame py-12 md:py-16 lg:py-24">
+        <header class="mb-12 md:mb-16 lg:mb-20">
+            <span class="eyebrow">Submission Portal</span>
+            <h1 class="heading-1 mt-3 mb-4">Submit Your Work.</h1>
+            <p class="text-ink/60 max-w-2xl">Share your digital project with the community. All submissions are reviewed by our curatorial team.</p>
         </header>
 
-        <form id="submission-form" class="max-w-5xl">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-20">
-                
-                <div class="flex flex-col gap-12">
-                    <section>
-                        <label class="form-label">Project Title</label>
-                        <input type="text" placeholder="e.g. ABYSSINIA BAKERY" class="form-input" required />
-                    </section>
-
-                    <section>
-                        <label class="form-label">Live URL</label>
-                        <input type="url" placeholder="https://yourproject.com" class="form-input" required />
-                    </section>
-
-                    <section>
-                        <label class="form-label">Tech Stack</label>
-                        <input type="text" placeholder="Astro, Tailwind, GSAP" class="form-input" />
-                    </section>
-
-                    <section>
-                        <label class="form-label">Brand Hex Code</label>
-                        <div class="flex items-center gap-4">
-                            <input type="text" value="#D4AF37" id="hex-input" class="form-input" />
-                            <div id="color-preview" class="w-12 h-12 border border-muted" style="background-color: #D4AF37;"></div>
-                        </div>
-                    </section>
+        <form id="submission-form" class="max-w-3xl justify-self-center">
+            <!-- Basic Information -->
+            <div class="space-y-6 mb-12">
+                <div>
+                    <label class="form-label">Project Title <span class="text-primary">*</span></label>
+                    <input type="text" placeholder="e.g., Abyssinia Bakery" class="form-input" required />
                 </div>
 
-                <div class="flex flex-col gap-12">
-                    <section>
-                        <label class="form-label">Project Thumbnail (16:10)</label>
-                        <div id="drop-zone" class="relative group aspect-video border-2 border-dashed border-muted hover:border-primary transition-all flex justify-center items-center cursor-pointer bg-muted/10">
-                            <input type="file" id="file-input" class="hidden" accept="image/*" />
-                            <div id="preview-container" class="absolute inset-0 hidden pointer-events-none">
-                                <img id="image-preview" src="#" class="w-full h-full object-cover" alt="Preview" />
-                                <div class="absolute inset-0 bg-muted flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span class="eyebrow text-canvas">Change Image</span>
-                                </div>
-                            </div>
-                            <div id="upload-prompt" class="text-center">
-                                <span class="text-small text-muted">DRAG IMAGE OR CLICK TO BROWSE</span>
-                            </div>
-                        </div>
-                    </section>
+                <div>
+                    <label class="form-label">Live URL <span class="text-primary">*</span></label>
+                    <input type="url" placeholder="https://yourproject.com" class="form-input" required />
+                </div>
 
-                    <section>
-                        <label class="form-label">Collaborators (Must be on yet)</label>
-                        <div class="relative">
-                            <input type="text" id="collab-search" placeholder="Search by username..." class="form-input" />
-                            <div id="search-results" class="absolute z-10 w-full bg-canvas border border-muted mt-2 hidden">
-                                <button type="button" class="w-full text-left p-4 hover:bg-muted hover:text-ink text-small transition-colors border-b border-muted">@kaleb_yohannes</button>
-                                <button type="button" class="w-full text-left p-4 hover:bg-muted hover:text-ink text-small transition-colors">@studio_251</button>
-                            </div>
-                        </div>
-                    </section>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="form-label">Category</label>
+                        <select class="form-select">
+                            <option value="">Select a category</option>
+                            <option value="web-design">Web Design</option>
+                            <option value="development">Development</option>
+                            <option value="ecommerce">E-commerce</option>
+                            <option value="portfolio">Portfolio</option>
+                            <option value="creative">Creative</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Tech Stack</label>
+                        <input type="text" placeholder="Astro, Tailwind, GSAP" class="form-input" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Brand Hex Code</label>
+                    <div class="flex items-center gap-4">
+                        <input type="text" id="hex-input" placeholder="#D4AF37" class="form-input flex-1" />
+                        <div id="color-preview" class="w-12 h-12 border border-gray-300 rounded-sm" style="background-color: #D4AF37;"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Project Description</label>
+                    <textarea rows="4" placeholder="Tell us about your project, the inspiration, and what makes it unique..." class="form-textarea"></textarea>
                 </div>
             </div>
 
-            <div class="mt-24 pt-12 border-t border-muted flex flex-col lg:flex-row justify-between items-center gap-8">
-                <p class="body-copy max-w-xs">
-                    By submitting, you agree that this project is your original work.
-                </p>
-                <button type="submit" class="button-primary">
-                    Finalize Submission
-                    <div class="w-10 h-10 border border-muted flex items-center justify-center p-2 group-hover:rotate-45 transition-transform duration-300">
-                        <img src="/assets/right-up.png" class="w-full h-full object-contain invert" alt="arrow" />
+            <!-- Hero Image Section -->
+            <div class="mb-12 pt-6 border-t border-gray-200">
+                <h3 class="font-title text-xl font-bold mb-2">Hero Image</h3>
+                <p class="text-sm text-gray-500 mb-4">Main thumbnail for your submission (16:10 ratio recommended)</p>
+                
+                <div id="hero-drop-zone" class="relative group aspect-[16/10] border-2 border-dashed border-gray-300 hover:border-primary transition-all flex justify-center items-center cursor-pointer bg-gray-50 rounded-sm">
+                    <input type="file" id="hero-file-input" class="hidden" accept="image/*" />
+                    <div id="hero-preview-container" class="absolute inset-0 hidden">
+                        <img id="hero-image-preview" src="#" class="w-full h-full object-cover rounded-sm" alt="Preview" />
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-sm">
+                            <span class="text-white text-sm font-body font-semibold">Change Image</span>
+                        </div>
                     </div>
+                    <div id="hero-upload-prompt" class="text-center p-8">
+                        <svg class="w-10 h-10 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="text-sm text-gray-500">Drag image or click to browse</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Elements Section (Repeatable) -->
+            <div class="mb-12 pt-6 border-t border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="font-title text-xl font-bold mb-1">Additional Pages</h3>
+                        <p class="text-sm text-gray-500">Showcase other key pages of your project</p>
+                    </div>
+                    <button type="button" id="add-element-btn" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-body font-semibold border border-gray-300 rounded-sm hover:border-primary hover:text-primary transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Page
+                    </button>
+                </div>
+                
+                <div id="elements-container" class="space-y-6">
+                    <!-- Elements will be added here dynamically -->
+                </div>
+            </div>
+
+            <!-- Collaborators Section -->
+            <div class="mb-12 pt-6 border-t border-gray-200">
+                <h3 class="font-title text-xl font-bold mb-2">Collaborators</h3>
+                <p class="text-sm text-gray-500 mb-4">Add team members who worked on this project</p>
+                
+                <div id="collaborators-container" class="space-y-3 mb-4">
+                    <!-- Collaborators will appear here -->
+                </div>
+                
+                <div class="relative">
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <input type="text" id="collab-search" placeholder="Search by username..." class="form-input" autocomplete="off" />
+                        </div>
+                        <button type="button" id="add-collab-btn" class="px-6 py-3 bg-primary text-white font-body font-semibold text-sm rounded-sm hover:bg-primary/90 transition-colors">
+                            Add
+                        </button>
+                    </div>
+                    <div id="search-results" class="absolute z-20 w-full bg-white border border-gray-200 mt-1 rounded-sm shadow-lg hidden max-h-64 overflow-y-auto">
+                        <!-- Search results will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="mt-12 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-6">
+                <p class="text-sm text-gray-500 text-center sm:text-left">
+                    By submitting, you confirm that this project is your original work.
+                </p>
+                <button type="submit" class="button-primary inline-flex items-center gap-3">
+                    Submit Project
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
                 </button>
             </div>
         </form>
     </main>
 
     <script>
-        // DOM Elements
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input') as HTMLInputElement;
-        const previewContainer = document.getElementById('preview-container');
-        const imagePreview = document.getElementById('image-preview') as HTMLImageElement;
-        const uploadPrompt = document.getElementById('upload-prompt');
-        const hexInput = document.getElementById('hex-input') as HTMLInputElement;
-        const colorPreview = document.getElementById('color-preview');
-        const collabSearch = document.getElementById('collab-search');
-        const searchResults = document.getElementById('search-results');
+        // Hero Image Upload Logic
+        const heroDropZone = document.getElementById('hero-drop-zone');
+        const heroFileInput = document.getElementById('hero-file-input');
+        const heroPreviewContainer = document.getElementById('hero-preview-container');
+        const heroImagePreview = document.getElementById('hero-image-preview');
+        const heroUploadPrompt = document.getElementById('hero-upload-prompt');
 
-        // Logic for Image Upload
-        if (dropZone && fileInput) {
-            dropZone.addEventListener('click', () => fileInput.click());
+        if (heroDropZone && heroFileInput) {
+            heroDropZone.addEventListener('click', () => heroFileInput.click());
             
-            fileInput.addEventListener('change', (e) => {
-                const target = e.target as HTMLInputElement;
-                const file = target.files?.[0] ?? null;
-                
+            heroFileInput.addEventListener('change', (e) => {
+                const file = e.target.files?.[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        if (imagePreview && previewContainer && uploadPrompt) {
-                            imagePreview.src = event.target?.result as string;
-                            previewContainer.classList.remove('hidden');
-                            uploadPrompt.classList.add('hidden');
-                        }
+                        heroImagePreview.src = event.target?.result;
+                        heroPreviewContainer.classList.remove('hidden');
+                        heroUploadPrompt.classList.add('hidden');
                     };
                     reader.readAsDataURL(file);
                 }
             });
         }
 
-        // Logic for Color Preview
+        // Color Picker Logic
+        const hexInput = document.getElementById('hex-input');
+        const colorPreview = document.getElementById('color-preview');
+        
         if (hexInput && colorPreview) {
             hexInput.addEventListener('input', (e) => {
-                const target = e.target as HTMLInputElement;
-                colorPreview.style.backgroundColor = target.value;
+                let value = e.target.value;
+                if (value && /^#[0-9A-Fa-f]{6}$/.test(value)) {
+                    colorPreview.style.backgroundColor = value;
+                }
             });
         }
 
-        // Logic for Collaborator Search UI
-        if (collabSearch && searchResults) {
-            collabSearch.addEventListener('focus', () => searchResults.classList.remove('hidden'));
-            document.addEventListener('click', (e) => {
-                const target = e.target as Node;
-                if (!collabSearch.contains(target)) {
+        // Elements Section - Dynamic addition of page elements
+        let elementCount = 0;
+        const elementsContainer = document.getElementById('elements-container');
+        const addElementBtn = document.getElementById('add-element-btn');
+
+        function createElementBlock() {
+            const id = elementCount++;
+            const div = document.createElement('div');
+            div.className = 'element-block p-5 border border-gray-200 rounded-sm bg-gray-50';
+            div.setAttribute('data-element-id', id);
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <label class="form-label mb-0 font-semibold">Page ${id + 1}</label>
+                    <button type="button" class="remove-element text-gray-400 hover:text-red-500 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label text-sm">Page Name</label>
+                        <input type="text" placeholder="e.g., Homepage, About Us, Product Page" class="form-input" />
+                    </div>
+                    <div>
+                        <label class="form-label text-sm">Page URL (optional)</label>
+                        <input type="url" placeholder="https://yourproject.com/page" class="form-input" />
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="form-label text-sm">Page Screenshot</label>
+                    <div class="element-drop-zone relative group aspect-video border-2 border-dashed border-gray-300 hover:border-primary transition-all flex justify-center items-center cursor-pointer bg-white mt-1 rounded-sm">
+                        <input type="file" class="element-file-input hidden" accept="image/*" />
+                        <div class="element-preview-container absolute inset-0 hidden">
+                            <img class="element-preview-img w-full h-full object-cover rounded-sm" src="#" alt="Preview" />
+                            <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-sm">
+                                <span class="text-white text-sm font-body font-semibold">Change Image</span>
+                            </div>
+                        </div>
+                        <div class="element-upload-prompt text-center p-4">
+                            <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="text-sm text-gray-500">Upload screenshot</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Setup remove button
+            const removeBtn = div.querySelector('.remove-element');
+            removeBtn.addEventListener('click', () => div.remove());
+            
+            // Setup image upload for this element
+            const dropZone = div.querySelector('.element-drop-zone');
+            const fileInput = div.querySelector('.element-file-input');
+            const previewContainer = div.querySelector('.element-preview-container');
+            const previewImg = div.querySelector('.element-preview-img');
+            const uploadPrompt = div.querySelector('.element-upload-prompt');
+            
+            dropZone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        previewImg.src = event.target?.result;
+                        previewContainer.classList.remove('hidden');
+                        uploadPrompt.classList.add('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            return div;
+        }
+
+        if (addElementBtn && elementsContainer) {
+            addElementBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                elementsContainer.appendChild(createElementBlock());
+            });
+        }
+
+        // Collaborators Section
+        const collaboratorsContainer = document.getElementById('collaborators-container');
+        const collabSearch = document.getElementById('collab-search');
+        const searchResults = document.getElementById('search-results');
+        const addCollabBtn = document.getElementById('add-collab-btn');
+        
+        // Mock users database
+        const mockUsers = [
+            { username: 'kaleb_yohannes', name: 'Kaleb Yohannes', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100' },
+            { username: 'studio_251', name: 'Studio 251', avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=100' },
+            { username: 'nati_design', name: 'Nati Design', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100' },
+            { username: 'sara_tekle', name: 'Sara Tekle', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100' },
+            { username: 'dawit_a', name: 'Dawit Abraham', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100' },
+        ];
+        
+        let selectedCollaborators = new Set();
+        
+        function renderCollaborators() {
+            if (!collaboratorsContainer) return;
+            collaboratorsContainer.innerHTML = '';
+            selectedCollaborators.forEach(username => {
+                const user = mockUsers.find(u => u.username === username);
+                if (user) {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between p-3 border border-gray-200 rounded-sm bg-white';
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <img src="${user.avatar}" alt="${user.name}" class="w-8 h-8 rounded-full object-cover" />
+                            <div>
+                                <p class="font-body font-semibold text-sm">${user.name}</p>
+                                <p class="text-sm text-gray-500">@${user.username}</p>
+                            </div>
+                        </div>
+                        <button type="button" class="remove-collab text-gray-400 hover:text-red-500 transition-colors" data-username="${username}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    `;
+                    collaboratorsContainer.appendChild(div);
+                }
+            });
+            
+            // Add remove event listeners
+            document.querySelectorAll('.remove-collab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const username = btn.getAttribute('data-username');
+                    selectedCollaborators.delete(username);
+                    renderCollaborators();
+                });
+            });
+        }
+        
+        function updateSearchResults(query) {
+            if (!searchResults) return;
+            const filtered = mockUsers.filter(u => 
+                (u.username.toLowerCase().includes(query.toLowerCase()) || u.name.toLowerCase().includes(query.toLowerCase())) &&
+                !selectedCollaborators.has(u.username)
+            );
+            
+            if (filtered.length > 0 && query.length > 0) {
+                searchResults.innerHTML = filtered.map(user => `
+                    <button type="button" class="collab-result w-full text-left p-3 hover:bg-gray-50 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0" data-username="${user.username}">
+                        <img src="${user.avatar}" alt="${user.name}" class="w-8 h-8 rounded-full object-cover" />
+                        <div>
+                            <p class="font-body font-semibold text-sm">${user.name}</p>
+                            <p class="text-sm text-gray-500">@${user.username}</p>
+                        </div>
+                    </button>
+                `).join('');
+                searchResults.classList.remove('hidden');
+                
+                // Add click handlers
+                document.querySelectorAll('.collab-result').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const username = btn.getAttribute('data-username');
+                        selectedCollaborators.add(username);
+                        renderCollaborators();
+                        searchResults.classList.add('hidden');
+                        if (collabSearch) collabSearch.value = '';
+                    });
+                });
+            } else {
+                searchResults.classList.add('hidden');
+            }
+        }
+        
+        if (collabSearch) {
+            collabSearch.addEventListener('input', (e) => {
+                updateSearchResults(e.target.value);
+            });
+            
+            collabSearch.addEventListener('focus', () => {
+                if (collabSearch.value.length > 0) {
+                    updateSearchResults(collabSearch.value);
+                }
+            });
+        }
+        
+        if (addCollabBtn && collabSearch) {
+            addCollabBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const query = collabSearch.value;
+                const user = mockUsers.find(u => 
+                    (u.username.toLowerCase() === query.toLowerCase() || u.name.toLowerCase() === query.toLowerCase()) &&
+                    !selectedCollaborators.has(u.username)
+                );
+                if (user) {
+                    selectedCollaborators.add(user.username);
+                    renderCollaborators();
+                    collabSearch.value = '';
                     searchResults.classList.add('hidden');
                 }
             });
         }
+        
+        document.addEventListener('click', (e) => {
+            if (searchResults && !searchResults.contains(e.target) && e.target !== collabSearch) {
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        // Form submission
+        const form = document.getElementById('submission-form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Form submitted successfully! (Demo)');
+        });
     </script>
 </Layout>

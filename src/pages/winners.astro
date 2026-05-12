@@ -6,105 +6,109 @@ const yearWinner = {
   developer: "Helm Creatives",
   category: "Immersive Narrative",
   year: "2025",
-  image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564",
-  description: "Recognized for pioneering a new era of fluid typography and spatial navigation."
+  image: "https://assets.awwwards.com/awards/media/cache/thumb_880_660/submissions/2026/04/69d768dd8b896711383791.png",
+  description: "Pioneering a new era of fluid typography and spatial navigation."
 };
 
 const weekWinners = [
-  { title: "Kinetica", dev: "@studio_x", date: "Week 14", img: "https://picsum.photos/seed/w1/1200/800" },
-  { title: "Oasis UI", dev: "Nova Digital", date: "Week 13", img: "https://picsum.photos/seed/w2/1200/800" },
-  { title: "The Void", dev: "@dark_mode", date: "Week 12", img: "https://picsum.photos/seed/w3/1200/800" },
-  { title: "Ether", dev: "Flux Agency", date: "Week 11", img: "https://picsum.photos/seed/w4/1200/800" },
+  { title: "Kinetica", dev: "Studio X", img: "https://picsum.photos/seed/w1/1200/800" },
+  { title: "Oasis UI", dev: "Nova Digital", img: "https://picsum.photos/seed/w2/1200/800" },
+  { title: "The Void", dev: "Dark Mode", img: "https://picsum.photos/seed/w3/1200/800" },
+  { title: "Ether", dev: "Flux Agency", img: "https://picsum.photos/seed/w4/1200/800" },
 ];
-
-const winnersSchema = {
-  "@context": "https://schema.org",
-  "@type": "ItemList",
-  "name": "yet Design Awards Winners",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "item": {
-        "@type": "CreativeWork",
-        "name": yearWinner.title,
-        "award": `Best Web Design of the Year ${yearWinner.year}`,
-        "author": { "@type": "Organization", "name": yearWinner.developer }
-      }
-    }
-  ]
-};
 ---
 
-<Layout title="Winners Circle" description="The vanguard of digital excellence. Explore the Site of the Year and Site of the Week winners.">
-    <script type="application/ld+json" set:html={JSON.stringify(winnersSchema)} />
-
-    <main class="site-frame py-24">
-        <section class="mb-40">
-            <header class="mb-16 border-b border-muted pb-8 flex flex-col lg:flex-row justify-between items-start gap-8">
+<Layout title="Winners Circle">
+    <main class="site-frame py-12 md:py-16 lg:py-24">
+        
+        <!-- Grand Prix Section -->
+        <section class="mb-24 md:mb-32 lg:mb-40">
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 md:mb-12 border-b border-muted pb-6 md:pb-8">
                 <div>
-                    <p class="eyebrow mb-4">The Highest Honor</p>
+                    <p class="eyebrow mb-2">Site of the Year</p>
                     <h1 class="heading-1">Grand Prix.</h1>
                 </div>
-                <span class="display-heading">{yearWinner.year}</span>
+                <span class="text-2xl md:text-3xl font-title font-light text-muted">{yearWinner.year}</span>
             </header>
 
-            <div class="group relative aspect-[21/9] w-full overflow-hidden bg-ink/5 border border-muted">
-                <img src={yearWinner.image} alt={yearWinner.title} class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105" />
+            <!-- Card Container -->
+            <div class="bg-canvas overflow-hidden border border-muted">
+                <!-- Image Container -->
+                <div class="aspect-[16/10] md:aspect-[21/9] w-full flex items-center justify-center p-4 md:p-8 bg-ink/5">
+                    <img 
+                        src={yearWinner.image} 
+                        alt={yearWinner.title} 
+                        class="w-full h-full object-contain" 
+                    />
+                </div>
                 
-                <div class="absolute inset-0 bg-linear-to-t from-ink/80 via-transparent to-transparent flex flex-col justify-end p-8 md:p-16">
-                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                        <div>
-                            <h2 class="section-heading text-canvas leading-none mb-4">{yearWinner.title}</h2>
-                            <p class="body-copy text-canvas italic">{yearWinner.description}</p>
+                <!-- Info Overlay -->
+                <div class="p-6 md:p-8 lg:p-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-t border-muted">
+                    <div class="space-y-2">
+                        <h2 class="text-2xl md:text-3xl font-title font-bold tracking-tight">{yearWinner.title}</h2>
+                        <p class="text-sm md:text-base text-ink/60 max-w-lg">{yearWinner.description}</p>
+                    </div>
+                    <div class="flex items-center gap-6 flex-shrink-0">
+                        <div class="text-left md:text-right">
+                            <p class="eyebrow text-muted">Developer</p>
+                            <p class="font-body font-semibold">{yearWinner.developer}</p>
                         </div>
-                        <div class="flex items-center gap-6">
-                            <div class="text-right">
-                                <p class="eyebrow text-primary">Studio</p>
-                                <p class="font-body text-canvas text-xl">{yearWinner.developer}</p>
-                            </div>
-                            <div class="w-16 h-16 rounded-full border border-canvas/20 flex items-center justify-center p-4">
-                                <img src="/assets/right-up.png" class="w-full h-full invert" alt="link" />
-                            </div>
-                        </div>
+                        <a 
+                            href="#" 
+                            class="w-12 h-12 rounded-full border border-muted flex items-center justify-center text-ink hover:border-primary hover:text-primary transition-colors"
+                            aria-label="View project"
+                        >
+                            <i class="fas fa-arrow-right text-sm"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Recent Laureates Section -->
         <section>
-            <header class="mb-16 border-b border-muted pb-8">
-                <h2 class="section-heading">Weekly Selection.</h2>
-                <p class="eyebrow mt-2">Consistent Excellence in Craft</p>
+            <header class="mb-8 md:mb-12">
+                <h2 class="text-2xl md:text-3xl font-title font-bold tracking-tight">Recent Laureates.</h2>
+                <div class="h-px w-full bg-muted mt-4"></div>
             </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px  border border-ink/10">
+            <!-- Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16">
                 {weekWinners.map((site) => (
-                    <article class="group bg-canvas p-8 flex flex-col justify-between aspect-square hover:bg-ink transition-colors duration-500">
-                        <div>
-                            <div class="flex justify-between items-start mb-12">
-                                <span class="eyebrow text-muted group-hover:text-primary transition-colors">{site.date}</span>
-                                <div class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <img src="/assets/right-up.png" class="w-full h-full group-hover:invert" alt="arrow" />
-                                </div>
+                    <a href="#" class="group block no-underline">
+                        <!-- Image Container -->
+                        <div class="relative aspect-[16/10] mb-5 overflow-hidden border border-muted bg-ink/5">
+                            <img 
+                                src={site.img} 
+                                alt={site.title} 
+                                class="w-full h-full object-cover" 
+                            />
+                        </div>
+                        
+                        <!-- Details -->
+                        <div class="flex justify-between items-baseline border-b border-muted pb-4">
+                            <div class="flex flex-wrap items-baseline gap-2 md:gap-3">
+                                <h3 class="font-title font-bold text-base md:text-lg tracking-tight uppercase">{site.title}</h3>
+                                <span class="text-muted">—</span>
+                                <p class="font-body text-sm text-ink/60 italic">{site.dev}</p>
                             </div>
-                            
-                            <h3 class="section-heading mb-2 group-hover:text-canvas transition-colors">{site.title}</h3>
-                            <p class="text-small text-muted group-hover:text-canvas transition-colors">{site.dev}</p>
+                            <div class="text-muted group-hover:text-primary group-hover:translate-x-1 transition-all duration-300">
+                                <i class="fas fa-arrow-right text-xs"></i>
+                            </div>
                         </div>
-
-                        <div class="mt-8 h-0 overflow-hidden group-hover:h-32 transition-all duration-500">
-                            <img src={site.img} alt={site.title} class="w-full h-full object-cover grayscale" />
-                        </div>
-                    </article>
+                    </a>
                 ))}
             </div>
         </section>
 
-        <footer class="mt-40 py-24 border-t border-muted text-center">
-            <h3 class="section-heading mb-8">Your work belongs<br/>in this circle.</h3>
-            <a href="/submit" class="button-primary">
+        <!-- CTA Section -->
+        <footer class="mt-32 md:mt-40 lg:mt-48 py-16 md:py-20 lg:py-24 border-t border-muted text-center">
+            <h3 class="text-3xl md:text-5xl lg:text-6xl font-title font-bold mb-8 md:mb-12 tracking-tight">
+                Enter the circle.
+            </h3>
+            <a href="/submit" class="button-primary inline-flex items-center gap-3">
                 Submit Your Project
+                <i class="fas fa-arrow-right text-sm"></i>
             </a>
         </footer>
     </main>

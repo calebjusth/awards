@@ -1,4 +1,5 @@
 ---
+// Events.astro
 const events = [
   {
     title: "ETHIO-DIGITAL SUMMIT 2026",
@@ -7,7 +8,8 @@ const events = [
     organizer: "HELM CREATIVES",
     organizerLogo: "https://images.unsplash.com/photo-1614850523296-e8c041de239b?q=80&w=100",
     poster: "https://images.unsplash.com/photo-1540575861501-7ad05823c9f5?q=80&w=2070",
-    time: "09:00 AM"
+    time: "09:00 AM",
+    slug: "ethio-digital-summit-2026"
   },
   {
     title: "DESIGN DISCOURSE: ARABIC & GE'EZ",
@@ -16,76 +18,98 @@ const events = [
     organizer: "CREATIVE HUB ET",
     organizerLogo: "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=100",
     poster: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=1000",
-    time: "06:30 PM"
+    time: "06:30 PM",
+    slug: "design-discourse-arabic-geez"
   }
 ];
 ---
 
-<section class="site-frame py-32 border-t border-ink/5">
-    <div class="mb-24">
-        <h2 class="text-primary font-body font-black text-xl tracking-[0.2em] uppercase mb-4">Community</h2>
-        <h1 class="text-7xl md:text-9xl font-title leading-[0.8]">Upcoming<br/>Events</h1>
-    </div>
+<section class="site-frame py-16 md:py-24 lg:py-32 border-t border-muted">
+  <!-- Section Header -->
+  <div class="mb-10 md:mb-14 lg:mb-18">
+    <span class="eyebrow">Community</span>
+    <h2 class="heading-1 mt-2 max-w-2xl">Upcoming Events</h2>
+  </div>
 
-    <div class="flex flex-col gap-40">
-        {events.map((event) => (
-            <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+  <!-- Events Grid - Instagram-sized Square Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 lg:gap-8 max-w-4xl mx-auto">
+    {events.map((event) => (
+      <div class="group flex flex-col gap-3 md:gap-4">
+        <!-- Square Image Card - Instagram post size (aspect-square) -->
+        <div class="relative aspect-square w-full max-w-[400px] mx-auto overflow-hidden border border-muted bg-canvas">
+          <img 
+            src={event.poster} 
+            alt={event.title} 
+            class="w-full h-full object-cover"
+          />
+          
+          <!-- Always visible gradient overlay with text -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+            <div class="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-5">
+              <div class="flex items-end justify-between gap-2">
+                <!-- Title and Location on Bottom Left -->
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-title text-xs sm:text-sm md:text-base leading-tight text-white mb-0.5 line-clamp-2">
+                    {event.title}
+                  </h3>
+                  <div class="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                    <span class="text-white/80 text-caption font-body text-[10px] sm:text-xs">
+                      {event.location}
+                    </span>
+                    <span class="text-white/60 text-caption font-body hidden xs:inline text-[10px] sm:text-xs">•</span>
+                    <span class="text-white/80 text-caption font-body text-[10px] sm:text-xs">
+                      {event.date} @ {event.time}
+                    </span>
+                  </div>
+                </div>
                 
-                <div class="lg:col-span-2 flex flex-col pt-2">
-                    <span class="font-body font-black text-5xl md:text-6xl leading-tight tracking-tighter">
-                        {event.date}
-                    </span>
-                    <span class="font-body font-black text-2xl mt-4 text-primary tracking-widest leading-none">
-                        {event.time}
-                    </span>
-                </div>
-
-                <div class="lg:col-span-6 group/poster relative aspect-[16/9] overflow-hidden bg-ink/5 rounded-sm">
-                    <img 
-                        src={event.poster} 
-                        alt={event.title} 
-                        class="w-full h-full object-cover transition-transform "
-                    />
-                    <div class="absolute inset-0 bg-primary/10 opacity-0 group-hover/poster:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                        <div class="w-20 h-20 bg-canvas rounded-full flex items-center justify-center p-5 shadow-xl translate-y-4 group-hover/poster:translate-y-0 transition-transform duration-500">
-                             <img src="/assets/right-up.png" alt="View" class="w-full h-full object-contain" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-4 flex flex-col justify-between py-2">
-                    <div>
-                        <h3 class="text-4xl md:text-5xl font-title leading-tight mb-8">
-                            {event.title}
-                        </h3>
-                        
-                        <div class="flex flex-col gap-6">
-                            <div class="flex items-center gap-3 group/loc cursor-pointer">
-                                <div class="w-5 h-5 opacity-40 group-hover/loc:opacity-100 transition-opacity">
-                                    <img src="/assets/location.png" alt="Loc" class="w-full h-full object-contain" />
-                                </div>
-                                <p class="font-body font-bold text-sm uppercase tracking-widest opacity-60 group-hover/loc:text-primary transition-colors">
-                                    {event.location}
-                                </p>
-                            </div>
-                            
-                            <div class="flex items-center gap-4 mt-2">
-                                <div class="w-10 h-10 rounded-full overflow-hidden border border-ink/10">
-                                    <img src={event.organizerLogo} alt={event.organizer} class="w-full h-full object-cover" />
-                                </div>
-                                <div>
-                                    <p class="font-body font-bold text-[10px] uppercase opacity-40 tracking-widest leading-none mb-1">Prepared By</p>
-                                    <p class="font-body font-black text-lg leading-none uppercase">{event.organizer}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-                </div>
-
-
+                <!-- Arrow Button on Bottom Right -->
+                <a 
+                  href={`/events/${event.slug}`}
+                  class="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white hover:text-primary transition-all flex items-center justify-center flex-shrink-0"
+                  aria-label="View event details"
+                >
+                  <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </a>
+              </div>
             </div>
-        ))}
-    </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- View All Events Link -->
+  <div class="mt-12 md:mt-16 text-center">
+    <a href="/events" class="button-outline inline-flex items-center gap-2">
+      View All Events
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+      </svg>
+    </a>
+  </div>
 </section>
+
+<style is:global>
+  /* Gradient overlay for better text readability - always visible */
+  .bg-gradient-to-t {
+    background-image: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4), transparent);
+  }
+  
+  /* Line clamp for multi-line text truncation */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Extra small breakpoint for the dot separator */
+  @media (min-width: 480px) {
+    .xs\:inline {
+      display: inline;
+    }
+  }
+</style>

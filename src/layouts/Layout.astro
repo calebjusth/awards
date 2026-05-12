@@ -7,6 +7,7 @@ interface Props {
 }
 
 const { title, description = "The Standard of Ethiopian Web Design." } = Astro.props;
+const siteUrl = Astro.site; // 
 ---
 
 <!doctype html>
@@ -18,10 +19,29 @@ const { title, description = "The Standard of Ethiopian Web Design." } = Astro.p
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <title>{title} | Wabi Awards</title>
+        <meta name="apple-mobile-web-app-title" content="Wabi" />
+        <link rel="manifest" href="/site.webmanifest" />
+        
+        <title>{title} | Wabi Awards | Best Ethiopian Web Design Trends</title>
         <meta name="description" content={description} />
+
+        <!-- Open Graph -->
+        <meta property="og:title" content={`${title} | Wabi Awards`} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={siteUrl} />
+        <meta property="og:image" content={`${siteUrl}/og-image.webp`} />
+        <meta property="og:site_name" content="Wabi Awards" />
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${title} | Wabi Awards`} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={`${siteUrl}/og-image.webp`} />
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     </head>
+
     <body class="selection:bg-primary selection:text-canvas bg-canvas overflow-x-hidden">
         
         <header class="fixed top-6 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-7xl">
@@ -60,10 +80,10 @@ const { title, description = "The Standard of Ethiopian Web Design." } = Astro.p
             
             <div class="grid grid-cols-1 md:grid-cols-2 w-full h-full">
                 <nav class="flex flex-col justify-center px-12 md:px-24 gap-6 text-canvas">
-                    <a href="/winners" class="font-title text-6xl md:text-8xl hover:text-ink transition-all">Winners</a>
-                    <a href="/nominees" class="font-title text-6xl md:text-8xl hover:text-ink transition-all">Nominees</a>
-                    <a href="/events" class="font-title text-6xl md:text-8xl hover:text-ink transition-all">Events</a>
-                    <a href="/gallery" class="font-title text-6xl md:text-8xl hover:text-ink transition-all">Gallery</a>
+                    <a href="/winners" class="font-title text-6xl md:text-8xl transition-all">Winners</a>
+                    <a href="/nominees" class="font-title text-6xl md:text-8xl transition-all">Nominees</a>
+                    <a href="/events" class="font-title text-6xl md:text-8xl transition-all">Events</a>
+                    <a href="/gallery" class="font-title text-6xl md:text-8xl transition-all">Gallery</a>
                 </nav>
                 
                 <div class="hidden md:block relative overflow-hidden bg-ink">

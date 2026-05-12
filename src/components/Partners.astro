@@ -9,29 +9,29 @@ const partners = [
 ];
 ---
 
-<section class="site-frame py-32 border-t border-muted">
+<section class="site-frame py-16 md:py-24 lg:py-32 border-t border-muted">
     <div class="flex flex-col items-center">
-        <div class="text-center mb-24 px-4">
+        <div class="text-center mb-12 md:mb-16 lg:mb-20 px-4">
             <span class="font-body text-caption text-primary">The Alliance</span>
-            <h2 class="font-title mt-6">Partners &<br class="hidden md:block"/>Collaborators</h2>
+            <h2 class="font-title mt-4 md:mt-6">Partners &<br class="hidden md:block"/>Collaborators</h2>
         </div>
 
-        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-canvas border border-muted max-w-6xl">
+        <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-px bg-muted border border-muted max-w-5xl">
             {partners.map((partner) => (
-                <div class="group flex items-center justify-center h-48 md:h-64 bg-canvas px-8 transition-colors hover:bg-ink/5">
+                <div class="flex items-center justify-center h-32 sm:h-36 md:h-40 bg-canvas px-4 sm:px-6 md:px-8">
                     <img 
                         src={partner.logo} 
                         alt={partner.name} 
-                        class="max-h-16 md:max-h-24 w-auto object-contain transition-all duration-500" 
+                        class="max-h-8 sm:max-h-10 md:max-h-12 w-auto object-contain grayscale opacity-70" 
                     />
                 </div>
             ))}
         </div>
         
-        <div class="mt-24">
-            <a href="mailto:collab@yourdomain.com" class="group flex items-center gap-6 bg-ink text-canvas px-10 py-6 font-body font-semibold text-caption hover:bg-primary transition-colors duration-300">
+        <div class="mt-12 md:mt-16 lg:mt-20">
+            <a href="mailto:collab@yourdomain.com" class="group flex items-center gap-4 md:gap-6 bg-ink text-canvas px-6 md:px-8 lg:px-10 py-4 md:py-5 lg:py-6 font-body font-semibold text-caption hover:bg-primary transition-colors duration-300">
                 become a partner
-                <div class="w-8 h-8 md:w-10 md:h-10 border border-muted flex items-center justify-center p-2 group-hover:rotate-45 transition-transform duration-300">
+                <div class="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 border border-muted flex items-center justify-center p-1.5 md:p-2 group-hover:rotate-45 transition-transform duration-300">
                     <img src="/assets/right-up.png" class="w-full h-full object-contain invert" alt="arrow" />
                 </div>
             </a>

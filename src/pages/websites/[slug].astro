@@ -1,0 +1,297 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { websites } from '../../data/websites';
+
+export async function getStaticPaths() {
+  return websites.map((website) => ({ params: { slug: website.slug } }));
+}
+
+const { slug } = Astro.params;
+const website = websites.find((item) => item.slug === slug);
+
+if (!website) {
+  throw new Error('Website not found');
+}
+
+// Keep the overall SOTD score
+const avgJuryScore = (
+  (website.scores.jury.creativity +
+    website.scores.jury.content +
+    website.scores.jury.usability +
+    website.scores.jury.interactivity) /
+  4
+).toFixed(1);
+
+// Demo locations for the voters list
+const demoLocations = ['Tokyo, JP', 'New York, USA', 'London, UK', 'Berlin, DE', 'Paris, FR'];
+---
+
+<Layout title={`${website.title} — Showcase`} description={website.description}>
+  <main class="bg-canvas text-ink min-h-screen pt-24 pb-32">
+    <article class="site-frame max-w-7xl mx-auto px-6 md:px-12">
+      
+      {/* 1. Header Section */}
+      <header class="flex flex-col items-center text-center space-y-8 mb-20">
+        <span class="text-caption  uppercase tracking-[0.3em]">Site of the Day</span>
+        <h1 class="font-title text-[4rem] md:text-[7rem] leading-none tracking-tight">{website.title}</h1>
+        <div class="flex items-center gap-4">
+          <span class="text-caption  uppercase tracking-widest">Overall Rating</span>
+          <span class="font-title text-3xl md:text-4xl text-primary">{avgJuryScore}</span>
+        </div>
+      </header>
+
+      {/* 2. Hero Image */}
+      <section class="mb-24 w-full">
+        <div class="aspect-[16/9] w-full  overflow-hidden bg-ink/5">
+          <img src={website.heroImage} alt={website.title} class="w-full h-full rounded-[2rem] object-cover" />
+        </div>
+      </section>
+
+      {/* 3. Developer & Stack */}
+      <section class="max-w-4xl mx-auto text-center space-y-16 mb-32">
+        <div class="space-y-6">
+          <p class="text-xl  font-body">
+            By <span class="text-ink font-medium">{website.developer}</span>
+          </p>
+          <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-3">
+            {website.techStack.map((tech) => (
+              <span class="text-caption  tracking-wide">{tech}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* 4. Description */}
+        <div>
+          <p class="font-body text-2xl md:text-3xl leading-relaxed text-ink/90">
+            {website.description}
+          </p>
+        </div>
+      </section>
+
+      {/* 5. Color Palette */}
+      <section class="max-w-4xl mx-auto mb-32 flex flex-col items-center">
+        <span class="text-caption  uppercase tracking-[0.3em] mb-12">Main Palette</span>
+        
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-10">
+          
+          {/* Pink Card */}
+          <div 
+            class="group relative w-56 h-72 md:w-64 md:h-80 rounded-2xl p-6 flex flex-col justify-between transition-transform duration-500 hover:-translate-y-2" 
+            style="background-color: #f472b6;"
+          >
+            <span class="font-body text-sm tracking-widest" style="color: #60a5fa;">#F472B6</span>
+            <div class="flex justify-center items-center flex-grow">
+              <span class="font-body text-7xl md:text-8xl" style="color: #60a5fa;">Aa</span>
+            </div>
+          </div>
+
+          {/* Blue Card */}
+          <div 
+            class="group relative w-56 h-72 md:w-64 md:h-80 rounded-2xl p-6 flex flex-col justify-between transition-transform duration-500 hover:-translate-y-2" 
+            style="background-color: #60a5fa;"
+          >
+            <span class="font-title text-sm tracking-widest" style="color: #f472b6;">#60A5FA</span>
+            <div class="flex justify-center items-center flex-grow">
+              <span class="font-title text-7xl md:text-8xl" style="color: #f472b6;">Aa</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 6. Bento Grid (Other Elements) */}
+      <section class="mb-32">
+        <span class="block text-center text-caption  uppercase tracking-[0.3em] mb-12">Gallery & Layouts</span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+          <div class="md:col-span-2  overflow-hidden bg-ink/5">
+            <img src={website.heroImage} class="w-full h-full object-cover " alt="Gallery item" />
+          </div>
+          <div class=" overflow-hidden bg-ink/5">
+            <img src={website.heroImage} class="w-full h-full object-cover  object-left" alt="Gallery item" />
+          </div>
+          <div class=" overflow-hidden bg-ink/5">
+            <img src={website.heroImage} class="w-full h-full object-cover  object-right" alt="Gallery item" />
+          </div>
+          <div class="md:col-span-2  overflow-hidden bg-ink/5">
+            <img src={website.heroImage} class="w-full h-full object-cover  object-bottom" alt="Gallery item" />
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Voters Table & Vote Trigger */}
+      <section class="max-w-4xl mx-auto">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-6 border-b border-muted pb-8 mb-8">
+          <h3 class="text-caption text-ink uppercase tracking-[0.3em]">Community Votes</h3>
+          <button 
+            id="vote-btn" 
+            class="px-8 py-4 bg-ink text-canvas font-title text-sm uppercase tracking-widest rounded-full hover:bg-primary transition-colors duration-300"
+          >
+            Rate this site
+          </button>
+        </div>
+
+        <div class="space-y-2">
+          {website.recentVoters.map((voter, index) => (
+            <div class="flex items-center justify-between py-6 group hover:px-4 transition-all duration-300 rounded-xl hover:bg-muted/10">
+              <div class="flex items-center gap-6">
+                <img 
+                  src={voter.avatar} 
+                  alt={voter.name} 
+                  class="w-14 h-14 rounded-full object-cover grayscale " 
+                />
+                <div class="flex flex-col gap-1">
+                  <p class="font-title text-lg text-ink">{voter.name}</p>
+                  <p class="text-caption ">{demoLocations[index % demoLocations.length]}</p>
+                </div>
+              </div>
+              <span class="font-title text-2xl text-primary">{(10 - (index * 0.2)).toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+    </article>
+
+    {/* 8. The Minimalist Vote Modal */}
+    <dialog id="vote-modal" class="backdrop:bg-canvas/80 backdrop:backdrop-blur-md rounded-2xl bg-canvas border border-muted p-0 shadow-2xl m-auto">
+      <div class="w-[90vw] max-w-lg p-10">
+        <div class="flex justify-between items-center mb-10">
+          <h2 class="font-title text-3xl text-ink">Your Rating</h2>
+          <button 
+            id="close-modal"
+            class=" hover:text-ink transition-colors text-3xl font-light leading-none"
+            aria-label="Close modal"
+          >
+            &times;
+          </button>
+        </div>
+
+        <form id="vote-form" class="space-y-8">
+          {['Design', 'Content', 'Creativity', 'Responsiveness'].map((category) => (
+            <div class="space-y-3">
+              <div class="flex justify-between items-end">
+                <label class="text-caption text-ink uppercase tracking-wider">{category}</label>
+                <span class="font-title text-primary text-xl rating-display">5</span>
+              </div>
+              <input 
+                type="range" 
+                name={category.toLowerCase()} 
+                min="1" 
+                max="10" 
+                value="5" 
+                class="w-full rating-slider accent-primary bg-muted h-1 rounded-full appearance-none cursor-pointer"
+              />
+            </div>
+          ))}
+
+          <div class="pt-8 mt-8 border-t border-muted">
+            <button 
+              type="submit"
+              class="w-full px-6 py-4 bg-ink text-canvas font-title uppercase tracking-widest rounded-full hover:bg-primary transition-colors duration-300"
+            >
+              Submit Rating
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+  </main>
+</Layout>
+
+<style>
+  dialog {
+    animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  dialog::backdrop {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Custom styling for sliders to ensure they look clean across browsers */
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    cursor: pointer;
+    border: 2px solid var(--color-canvas);
+    box-shadow: 0 0 0 1px var(--color-primary);
+  }
+</style>
+
+<script>
+  // Vote Modal Functionality
+  const voteBtn = document.getElementById('vote-btn');
+  const voteModal = document.getElementById('vote-modal') as HTMLDialogElement;
+  const closeModalBtn = document.getElementById('close-modal');
+  const voteForm = document.getElementById('vote-form') as HTMLFormElement;
+  const sliders = document.querySelectorAll('.rating-slider');
+
+  // Update numbers when sliding
+  sliders.forEach(slider => {
+    slider.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      const display = target.parentElement?.querySelector('.rating-display');
+      if (display) {
+        display.textContent = target.value;
+      }
+    });
+  });
+
+  if (voteBtn && voteModal && closeModalBtn) {
+    voteBtn.addEventListener('click', () => {
+      voteModal.showModal();
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      voteModal.close();
+    });
+
+    voteModal.addEventListener('click', (e) => {
+      if (e.target === voteModal) {
+        voteModal.close();
+      }
+    });
+
+    voteForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(voteForm);
+      const submission = {
+        design: formData.get('design'),
+        content: formData.get('content'),
+        creativity: formData.get('creativity'),
+        responsiveness: formData.get('responsiveness'),
+      };
+      
+      console.log('Vote submitted:', submission);
+      
+      // Reset logic
+      voteModal.close();
+      voteForm.reset();
+      document.querySelectorAll('.rating-display').forEach(display => {
+        display.textContent = '5';
+      });
+      
+      alert('Thank you for your vote! Your ratings have been recorded.');
+    });
+  }
+</script>

@@ -1,102 +1,156 @@
 ---
+// Nominees.astro
+import type { ComponentProps } from 'astro';
+
+// Data definition (can be moved to a separate file or CMS)
 const nominees = [
   {
     title: "VIRTUAL ETHIOPIA",
     author: "Dawit Abraham",
     authorImg: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&auto=format&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964",
+    thumbnail: "https://assets.awwwards.com/awards/submissions/2026/05/6a00d598b2288109642180.png",
     category: "Web Design"
   },
   {
     title: "NEBULA DASHBOARD",
     author: "Helm Creatives",
     authorImg: "https://images.unsplash.com/photo-1614850523296-e8c041de239b?q=80&w=100&h=100&auto=format&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2026",
+    thumbnail: "https://assets.awwwards.com/awards/submissions/2026/04/69f1bfae1e5b1773184514.jpg",
     category: "Development"
   },
   {
     title: "ZOMA MUSEUM REDESIGN",
     author: "Sara Tekle",
     authorImg: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&h=100&auto=format&fit=crop",
-    thumbnail: "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=2000",
+    thumbnail: "https://assets.awwwards.com/awards/submissions/2026/04/69ef6833d82c4164300342.jpg",
     category: "Experience"
   }
 ];
 ---
 
-<section class="site-frame py-32 border-t border-muted">
-    <div class="flex justify-between items-end mb-16">
-        <div>
-            <h2 class="section-title">The Nominees</h2>
-            <p class="font-body text-caption text-ink mt-4">The next standard of excellence.</p>
-        </div>
-        <a href="/nominees" class="hidden md:block font-body font-semibold border-b-2 border-primary pb-1 hover:text-primary transition-colors">View all nominees</a>
+<section class="site-frame py-16 md:py-32 border-t border-muted">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 md:mb-16">
+    <div>
+      <h2 class="text-4xl md:text-5xl lg:text-6xl font-title font-bold tracking-tight">The Nominees</h2>
+      <p class="font-body text-sm md:text-base text-ink/70 mt-2 md:mt-4">The next standard of excellence.</p>
     </div>
+    <a href="/nominees" class="font-body font-semibold border-b-2 border-primary pb-1 hover:text-primary transition-colors text-sm md:text-base">
+      View all nominees
+    </a>
+  </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-20 gap-x-12">
-        {nominees.map((site) => (
-            <div class="group flex flex-col gap-6">
-                <div class="relative aspect-[4/5] overflow-hidden border border-muted bg-canvas rounded-sm">
-                    <img 
-                        src={site.thumbnail} 
-                        alt={site.title} 
-                        class="w-full h-full object-cover transition-all duration-700"
-                    />
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 lg:gap-16">
+    {nominees.map((site) => (
+      <div class="flex flex-col gap-5 md:gap-6">
+        {/* Image Card - Square aspect ratio with actions overlay at the bottom */}
+        <div class="relative aspect-square w-full overflow-hidden border border-muted bg-canvas">
+          <img 
+            src={site.thumbnail} 
+            alt={site.title} 
+            class="w-full h-full object-cover"
+          />
 
-                    <div class="absolute inset-0 bg-ink/95 hidden group-hover:flex flex-col items-center justify-center gap-6 text-canvas p-4">
-                        <div class="flex gap-4">
-                            <button class="w-14 h-14 rounded-full bg-canvas text-canvas border border-muted  hover:border-primary transition-all flex items-center justify-center p-4">
-                                <img src="/assets/save.png" alt="Save" class="w-full h-full object-contain" />
-                            </button>
-                            <a href="#" target="_blank" class="w-14 h-14 rounded-full bg-canvas text-canvas border border-muted  hover:border-primary transition-all flex items-center justify-center p-4">
-                                <img src="/assets/right-up.png" alt="Launch" class="w-full h-full object-contain" />
-                            </a>
-                        </div>
+          {/* Category Badge - Top Left */}
+          <div class="absolute top-4 left-4 z-10">
+            <span class="bg-canvas/90 backdrop-blur-sm border border-muted text-ink text-xs md:text-sm font-body font-medium px-2.5 py-1 md:px-3 md:py-1.5 rounded-sm">
+              {site.category}
+            </span>
+          </div>
 
-                        <button class="bg-canvas text-ink px-8 py-3 font-body font-semibold">
-                            Vote Now
-                        </button>
-                    </div>
-                    <div class="mt-4 flex items-center justify-center gap-4 md:hidden">
-                        <button class="w-14 h-14 rounded-full bg-ink text-canvas border border-muted flex items-center justify-center p-4">
-                            <img src="/assets/save.png" alt="Save" class="w-full h-full object-contain" />
-                        </button>
-                        <a href="#" target="_blank" class="w-14 h-14 rounded-full bg-ink text-canvas border border-muted flex items-center justify-center p-4">
-                            <img src="/assets/right-up.png" alt="Launch" class="w-full h-full object-contain" />
-                        </a>
-                        <button class="rounded-sm bg-canvas text-ink px-6 py-3 font-body font-semibold hover:bg-primary hover:text-canvas transition-colors">
-                            Vote Now
-                        </button>
-                    </div>
-
-                    <div class="absolute top-6 left-6 z-10">
-                        <span class="bg-canvas border border-muted text-ink text-caption font-body px-3 py-1">
-                            {site.category}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-4">
-                    <h3 class="font-title leading-none group-hover:text-primary transition-colors">
-                        {site.title}
-                    </h3>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full border border-muted overflow-hidden bg-canvas">
-                                <img src={site.authorImg} alt={site.author} class="w-full h-full object-cover" />
-                            </div>
-                            <a href="#" class="font-body font-semibold text-caption hover:text-primary transition-colors">
-                                {site.author}
-                            </a>
-                        </div>
-                        
-                        <div class="h-[1px] flex-grow mx-4 bg-muted"></div>
-                        
-                        <span class="font-body text-caption text-muted">2026</span>
-                    </div>
-                </div>
+          {/* Action Buttons Overlay - Bottom of the image */}
+          <div class="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-black/70 via-black/40 to-transparent">
+            <div class="flex items-center justify-between gap-3 md:gap-4">
+              {/* Save Button */}
+              <button 
+                class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-canvas/90 backdrop-blur-sm text-ink border border-muted hover:border-primary hover:bg-canvas transition-all flex items-center justify-center"
+                aria-label="Save"
+              >
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+              </button>
+              
+              {/* Vote Button with Arrow Icon (FontAwesome) */}
+              <button 
+                class="flex-1 bg-canvas/90 backdrop-blur-sm text-ink px-3 md:px-6 py-2 md:py-3 font-body font-semibold text-sm md:text-base rounded-sm hover:bg-primary hover:text-canvas transition-all flex items-center justify-center gap-2"
+              >
+                Vote Now
+                <i class="fas fa-arrow-right text-xs md:text-sm"></i>
+              </button>
+              
+              {/* Launch Link */}
+              <a 
+                href="#" 
+                target="_blank" 
+                class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-canvas/90 backdrop-blur-sm text-ink border border-muted hover:border-primary hover:bg-canvas transition-all flex items-center justify-center"
+                aria-label="Launch Site"
+              >
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
             </div>
-        ))}
-    </div>
+          </div>
+        </div>
+
+        {/* Card Footer - One line with title and author */}
+        <div class="flex items-center justify-between gap-3">
+          <h6 class="font-title font-bold text-sm sm:text-base md:text-lg whitespace-nowrap overflow-hidden text-ellipsis">
+            {site.title}
+          </h6>
+          
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <div class="w-6 h-6 md:w-7 md:h-7 rounded-full border border-muted overflow-hidden bg-canvas flex-shrink-0">
+              <img 
+                src={site.authorImg} 
+                alt={site.author} 
+                class="w-full h-full object-cover grayscale" 
+              />
+            </div>
+            <span class="font-body text-xs md:text-sm text-ink/70 whitespace-nowrap">
+              by {site.author}
+            </span>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
 </section>
+
+<style is:global>
+  /* These are global utility classes */
+  .site-frame {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  
+  @media (min-width: 640px) {
+    .site-frame {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .site-frame {
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+    }
+  }
+  
+  /* Ensure text doesn't break on mobile */
+  .whitespace-nowrap {
+    white-space: nowrap;
+  }
+  
+  .text-ellipsis {
+    text-overflow: ellipsis;
+  }
+  
+  .overflow-hidden {
+    overflow: hidden;
+  }
+</style>

@@ -1,4 +1,6 @@
 ---
+import { websites } from '../data/websites';
+
 // Dynamic Date Logic
 const today = new Date();
 const formattedDate = today.toLocaleDateString('en-US', {
@@ -7,53 +9,62 @@ const formattedDate = today.toLocaleDateString('en-US', {
   year: 'numeric'
 }).toUpperCase();
 
-// Placeholder Data - This would eventually come from a CMS or Props
-const siteName = "THE NOIR ARCHIVE";
-const agency = "HELM CREATIVES";
-const score = "9.42";
-const siteImage = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072";
+// Get the first website award as featured
+const featured = websites[0] || null;
+
+if (!featured) {
+  throw new Error('No website awards found');
+}
+
+const siteName = featured.title;
+const agency = featured.developer;
+const score = (
+  (featured.scores.jury.creativity +
+    featured.scores.jury.content +
+    featured.scores.jury.usability +
+    featured.scores.jury.interactivity) /
+  4
+).toFixed(2);
+const siteImage = featured.heroImage;
+const detailLink = `/websites/${featured.slug}`;
 ---
 
-<section class="relative w-full min-h-[180vh] flex flex-col pt-32 site-frame">
+<section class="relative w-full flex flex-col py-12 sm:py-16 md:py-20 lg:py-24 site-frame">
     
-    <div class="flex flex-col md:flex-row justify-between items-end border-b-2 border-muted pb-8 mb-12">
-        <div class="flex flex-col gap-2">
-            <span class="text-primary font-body text-caption">Site of the Day</span>
-            <h1 class="font-title text-4xl">{siteName}</h1>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b-2 border-muted pb-6 sm:pb-8 mb-8 sm:mb-10 md:mb-12 gap-4 md:gap-0">
+        <div class="flex flex-col gap-1 sm:gap-2">
+            <span class="text-primary font-body text-caption">Site of Day</span>
+            <h1 class="font-title text-2xl sm:text-3xl md:text-4xl">{siteName}</h1>
         </div>
         
-        <div class="flex flex-col items-end gap-2 mt-8 md:mt-0">
-             <div class="bg-primary text-canvas px-4 py-1 text-4xl font-title rounded-sm">
+        <div class="flex flex-row md:flex-col items-center md:items-end gap-3 md:gap-2">
+            <div class="bg-primary px-3 sm:px-4 py-1 text-2xl sm:text-3xl md:text-4xl font-title rounded-sm" style="color: var(--color-canvas);">
                 {score}
             </div>
-            <p class="font-body text-caption text-ink text-right">
-                By {agency}<br/>
-                {formattedDate}
+            <p class="font-body text-caption text-ink text-left md:text-right">
+                By {agency}<br class="hidden sm:inline md:hidden lg:inline"/>
+                <span class="whitespace-nowrap">{formattedDate}</span>
             </p>
         </div>
     </div>
 
-    <div class="relative w-full group cursor-pointer">
-        
-        <a href="#" class="absolute top-10 right-10 z-30 bg-canvas text-ink w-20 h-20 md:w-32 md:h-32 rounded-full flex items-center justify-center border-2 border-muted hover:bg-primary hover:text-canvas hover:scale-110 transition-all duration-500  group">
-            <i class="fa-solid fa-arrow-up-right text-3xl md:text-5xl -rotate-45"></i>
-        </a>
-
-        <div class="w-full h-auto overflow-hidden border-2 border-muted rounded-sm">
-            <img 
-                src={siteImage} 
-                alt={siteName}
-                class="w-full object-cover transition-transform duration-[2s] ease-out"
-            />
+    <!-- Image Container with Link - object-contain to preserve design -->
+    <a 
+        href={detailLink} 
+        class="relative w-full max-w-4xl mx-auto group block"
+        aria-label={`View ${siteName} details`}
+    >
+        <div class="w-full overflow-hidden border-2 border-muted rounded-sm bg-canvas group-hover:border-primary transition-colors duration-200">
+            <div class="aspect-video flex items-center justify-center p-4 md:p-8 transition-colors duration-200" style="background-color: rgba(26, 26, 26, 0.05);" onmouseover="this.style.backgroundColor='rgba(26, 26, 26, 0.1)'" onmouseout="this.style.backgroundColor='rgba(26, 26, 26, 0.05)'">
+                <img 
+                    src={siteImage} 
+                    alt={siteName}
+                    class="w-full h-full object-cover max-w-full  transition-transform duration-300"
+                />
+            </div>
         </div>
-    </div>
 
+        
+    </a>
 
 </section>
-
-<style>
-    /* Ensure the image container has enough height to peek out in the first fold */
-    img {
-        min-height: 150vh; /* This forces the "scrollable screenshot" feel */
-    }
-</style>
