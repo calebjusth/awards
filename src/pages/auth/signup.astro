@@ -1,4 +1,5 @@
 ---
+export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 ---
 
@@ -9,16 +10,17 @@ import Layout from '../../layouts/Layout.astro';
                 <p class="text-primary text-strong mb-3">Create Account</p>
                 <h1 class="heading-1 mb-4">Join the Wabi community.</h1>
                 <p class="body-copy max-w-xl">
-                    Enter your email and we&apos;ll send a secure code to create your account quickly.
+                    Enter your email and we'll send a secure code to create your account quickly.
                 </p>
             </div>
 
             <div class="card-panel">
-                <form action="/auth/verify" class="space-y-6">
+                <form id="signup-form" class="space-y-6">
                     <label class="form-label">
                         Email Address
                         <input
                             type="email"
+                            id="signup-email"
                             name="email"
                             placeholder="name@domain.com"
                             class="form-input"
@@ -26,7 +28,9 @@ import Layout from '../../layouts/Layout.astro';
                         />
                     </label>
 
-                    <button type="submit" class="button-primary w-full">
+                    <div id="error-message" class="text-xs font-mono text-red-500 hidden bg-red-500/5 border border-red-500/10 p-3 rounded-lg"></div>
+
+                    <button type="submit" id="submit-btn" class="button-primary w-full flex items-center justify-center gap-2">
                         Send OTP
                     </button>
                 </form>
@@ -38,3 +42,62 @@ import Layout from '../../layouts/Layout.astro';
         </div>
     </main>
 </Layout>
+
+<script>
+    const signupForm = document.getElementById('signup-form') as HTMLFormElement;
+    const errorContainer = document.getElementById('error-message');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const PAYLOAD_URL = 'https://backend-cms-six.vercel.app';
+
+    if (signupForm) {
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!errorContainer || !submitBtn) return;
+
+            errorContainer.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Generating Token...';
+
+            const emailInput = document.getElementById('signup-email') as HTMLInputElement;
+            const emailValue = emailInput?.value.trim();
+
+            // Generate a persistent static dummy password for the passwordless account
+            const fallbackPassword = `Wabi_OTP_Pass_${emailValue.split('@')[0]}_99!`;
+
+            try {
+                const res = await fetch(`${PAYLOAD_URL}/api/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: emailValue,
+                        password: fallbackPassword, // Satisfies Payload's auth requirement
+                        is_active: false,
+                        role: 'normal_user',
+                        user_interest_area: 'developer'
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (data.errors && data.errors[0]?.message?.includes('unique')) {
+                        throw new Error('This email address is already registered. Please go to Login.');
+                    }
+                    throw new Error(data.errors?.[0]?.message || 'Failed to dispatch verification request.');
+                }
+
+                // Stash the email and password context for verification page use
+                sessionStorage.setItem('wabi_auth_context_email', emailValue);
+                sessionStorage.setItem('wabi_auth_fallback_pwd', fallbackPassword);
+                
+                window.location.href = '/auth/verify';
+
+            } catch (err: any) {
+                errorContainer.innerText = err.message || 'An unexpected server error occurred.';
+                errorContainer.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Send OTP';
+            }
+        });
+    }
+</script>

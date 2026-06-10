@@ -1,0 +1,403 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// Ensure the page renders live dynamically per request
+export const prerender = false;
+
+const { id } = Astro.params;
+const PAYLOAD_URL = 'https://backend-cms-six.vercel.app';
+
+// 1. Check if the viewing client is the profile owner
+const sessionCookie = Astro.cookies.get('payload-token')?.value;
+const isOwner = sessionCookie === id;
+
+let userProfile: any = null;
+let userSubmissions: any[] = [];
+let errorMessage = '';
+
+try {
+  // 2. Fetch User Profile Data from Payload
+  const userRes = await fetch(`${PAYLOAD_URL}/api/users/${id}`);
+  if (!userRes.ok) {
+    if (userRes.status === 404) throw new Error('Designer profile not found.');
+    throw new Error('Failed to fetch profile metrics.');
+  }
+  userProfile = await userRes.json();
+
+  // 3. Fetch Submissions created by this specific User
+  const submissionsRes = await fetch(
+    `${PAYLOAD_URL}/api/submission?where[created_by][equals]=${id}&limit=100`
+  );
+  if (submissionsRes.ok) {
+    const subsData = await submissionsRes.json();
+    userSubmissions = subsData.docs || [];
+  }
+} catch (err: any) {
+  errorMessage = err.message || 'A network error occurred tracking down this account profile.';
+}
+
+// Format Name fallback if fields are empty
+const firstNameStr = userProfile?.first_name || '';
+const lastNameStr = userProfile?.last_name || '';
+const profileName = (firstNameStr || lastNameStr)
+  ? `${firstNameStr} ${lastNameStr}`.trim()
+  : userProfile?.email?.split('@')[0] || 'Anonymous Creator';
+
+// Fallback programmatic avatar engine utilizing initials if missing custom profile media
+const avatarInitials = (firstNameStr && lastNameStr)
+  ? `${firstNameStr.charAt(0)}${lastNameStr.charAt(0)}`
+  : profileName.slice(0, 2);
+
+// Handle Media URL parsing cleanly to avoid double domain injection
+let avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(avatarInitials)}&background=0a0a0a&color=f5f5f5&bold=true&format=svg&size=256`;
+
+if (userProfile?.profile_picture?.url) {
+  const rawUrl = userProfile.profile_picture.url;
+  avatarUrl = rawUrl.startsWith('http') ? rawUrl : `${PAYLOAD_URL}${rawUrl}`;
+}
+---
+
+<Layout title={`${profileName} — Profile`}>
+  <main class="bg-canvas min-h-screen pt-32 pb-40">
+    <div class="site-frame max-w-6xl mx-auto px-6 lg:px-8">
+      
+      {errorMessage ? (
+        <div class="card-panel py-20 text-center max-w-xl mx-auto space-y-4">
+          <p class="font-mono text-xs text-red-500 bg-red-500/5 border border-red-500/10 p-3">{errorMessage}</p>
+          <a href="/" class="link-secondary text-sm">Return back to showcase gallery</a>
+        </div>
+      ) : (
+        <>
+          {/* 1. Balanced Header Architecture */}
+          <section class="flex flex-col md:flex-row items-start gap-10 md:gap-16 mb-28 relative">
+            
+            {/* Avatar Cluster */}
+            <div class="relative group/avatar shrink-0 mx-auto md:mx-0">
+              <img 
+                id="profile-avatar-img"
+                src={avatarUrl} 
+                alt={profileName} 
+                class="w-28 h-28 rounded-full object-cover border border-muted/30 bg-muted/5 transition-transform duration-300"
+              />
+              {isOwner && (
+                <label for="avatar-file-input" class="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
+                  <span class="text-canvas text-[10px] uppercase tracking-widest font-mono font-bold text-center px-2">Update</span>
+                </label>
+                <input 
+                  type="file" 
+                  id="avatar-file-input" 
+                  accept="image/*" 
+                  class="hidden" 
+                />
+              )}
+            </div>
+
+            {/* Profile Fields Deck */}
+            <div class="max-w-3xl w-full space-y-6 text-center md:text-left">
+              
+              {/* Meta Baseline (Location) */}
+              <div class="flex items-center justify-center md:justify-start gap-2 text-ink/40">
+                <span 
+                  id="editable-location" 
+                  contenteditable={isOwner} 
+                  class={`eyebrow text-[11px] uppercase tracking-[0.2em] outline-none transition-colors ${isOwner ? 'hover:bg-muted/10 px-2 py-0.5 rounded focus:bg-muted/20 focus:text-ink' : ''}`}
+                  data-placeholder="Set Location"
+                >{userProfile?.location || "Unknown Location"}</span>
+                {isOwner && (
+                  <svg class="w-3 h-3 opacity-30 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                  </svg>
+                )}
+              </div>
+
+              {/* Identity Row */}
+              <div class="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                <h1 
+                  id="editable-name" 
+                  contenteditable={isOwner}
+                  class={`font-title text-4xl md:text-5xl font-bold tracking-tight text-ink outline-none transition-colors ${isOwner ? 'hover:bg-muted/10 px-2 rounded focus:bg-muted/20' : ''}`}
+                >
+                  {profileName}
+                </h1>
+
+                {userProfile?.verified && (
+                  <div class="inline-flex items-center text-ink shrink-0" aria-label="Verified Tier">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              {/* Corporate Placement / Position Fields Line */}
+              <div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm text-ink/90 font-mono tracking-tight">
+                <span 
+                  id="editable-position" 
+                  contenteditable={isOwner}
+                  class={`outline-none transition-colors ${isOwner ? 'hover:bg-muted/10 px-2 py-0.5 rounded focus:bg-muted/20 focus:text-ink' : ''}`}
+                  data-placeholder="Specify Position"
+                >{userProfile?.position || "Creative Staff"}</span>
+                <span class="italic">at</span>
+                <span 
+                  id="editable-company" 
+                  contenteditable={isOwner}
+                  class={`outline-none transition-colors ${isOwner ? 'hover:bg-muted/10 px-2 py-0.5 rounded focus:bg-muted/20 focus:text-ink' : ''}`}
+                  data-placeholder="Add Organization"
+                >{userProfile?.company || "Independent"}</span>
+              </div>
+
+              {/* Biography Section */}
+              <div class="pt-2 border-t border-muted/10 max-w-2xl">
+                <p 
+                  id="editable-about" 
+                  contenteditable={isOwner}
+                  class={`font-body text-base text-ink/80 leading-relaxed italic outline-none ${isOwner ? 'hover:bg-muted/10 p-2 rounded focus:bg-muted/20 block' : ''}`}
+                  data-placeholder="Tell the community about your approach to architecture, development, or identity layout..."
+                >
+                  {userProfile?.about ? `"${userProfile.about}"` : "This creator hasn't written a biography baseline yet."}
+                </p>
+              </div>
+
+              {/* Micro UX Feedback Area */}
+              {isOwner && (
+                <div class="pt-4 flex items-center justify-center md:justify-start gap-4 h-8">
+                  <button 
+                    id="save-profile-btn" 
+                    class="px-4 py-2 text-[10px] bg-ink text-canvas uppercase tracking-widest font-heading hover:bg-ink/90 transition-colors hidden"
+                  >
+                    Save Context
+                  </button>
+                  <span id="save-status" class="text-[11px] font-mono text-ink/50 hidden">Processing state update...</span>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* 2. Live Submissions Grid from Database */}
+          <section class="mb-32">
+            <div class="flex justify-between items-end mb-12 border-b border-muted/20 pb-4">
+              <h2 class="font-heading text-xs uppercase tracking-[0.3em] text-ink">Index Portfolio</h2>
+              <span class="text-xs font-mono text-ink/40">
+                {String(userSubmissions.length).padStart(2, '0')} / Total
+              </span>
+            </div>
+            
+            {userSubmissions.length === 0 ? (
+              <div class="border border-dashed border-muted/30 rounded-xl p-16 text-center space-y-4 bg-muted/[0.02]">
+                <p class="text-ink/40 text-sm italic">No project submissions mapped to this node yet.</p>
+                {isOwner && (
+                  <div class="pt-2">
+                    <a 
+                      href="/submissions/new" 
+                      class="inline-block px-5 py-2.5 bg-ink text-canvas text-[11px] font-heading uppercase tracking-widest hover:bg-ink/90 transition-colors"
+                    >
+                      Publish Project Document
+                    </a>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
+                {userSubmissions.map((site) => {
+                  let projectImg = "/assets/placeholder-fallback.png";
+                  if (site.hero_image?.url) {
+                    const rawImgUrl = site.hero_image.url;
+                    projectImg = rawImgUrl.startsWith('http') ? rawImgUrl : `${PAYLOAD_URL}${rawImgUrl}`;
+                  }
+                  
+                  const subYear = site.createdAt ? new Date(site.createdAt).getFullYear() : '2026';
+
+                  return (
+                    <a href={`/submissions/${site.id || site.slug}`} class="group cursor-pointer block">
+                      <div class="aspect-[4/3] overflow-hidden border border-muted/10 bg-muted/5 mb-4 transition-transform duration-500 group-hover:-translate-y-1">
+                        <img 
+                          src={`${projectImg}?tr=w-800,q-80,f-auto`}
+                          alt={site.project_name} 
+                          class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
+                          loading="lazy"
+                        />
+                      </div>
+                      <div class="flex justify-between items-start px-0.5">
+                        <div class="space-y-1 max-w-[75%]">
+                          <h3 class="font-heading text-base font-bold text-ink leading-tight truncate">
+                            {site.project_name}
+                          </h3>
+                          <p class="text-[11px] font-mono text-ink/40 uppercase tracking-wider truncate">
+                            {Array.isArray(site.tech_stack) 
+                              ? site.tech_stack.map((t: any) => typeof t === 'object' ? t.tech : t).join(', ') 
+                              : 'Creative Layout'}
+                          </p>
+                        </div>
+                        <span class="font-mono text-[10px] border border-muted/20 px-2 py-0.5 rounded text-ink/50 bg-muted/[0.02]">{subYear}</span>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* 3. Balanced Information/Metric Block Details */}
+          <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start border-t border-muted/20 pt-16">
+            <div class="space-y-4">
+              <h2 class="font-heading text-xs uppercase tracking-[0.3em] text-ink/40">Identity Meta Context</h2>
+              <div class="divide-y divide-muted/10 border-t border-muted/10">
+                <div class="py-4 flex justify-between items-center">
+                  <h4 class="font-heading text-sm text-ink font-semibold capitalize">{userProfile?.role?.replace('_', ' ') || 'Normal User'}</h4>
+                  <span class="text-xs font-mono text-ink/40">Access Architecture Status</span>
+                </div>
+                <div class="py-4 flex justify-between items-center">
+                  <h4 class="font-heading text-sm text-ink font-semibold capitalize">{userProfile?.user_interest_area || 'Developer'}</h4>
+                  <span class="text-xs font-mono text-ink/40">Primary Specialization</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-muted/[0.03] p-8 rounded-xl flex flex-col items-center text-center space-y-4 border border-muted/20">
+              <span class="text-[9px] font-heading uppercase tracking-[0.3em] opacity-40">System Core Network Routing</span>
+              <h2 class="font-title text-xl font-bold leading-tight text-ink">
+                {userProfile?.verified ? "Verified System Evaluator" : "Active Node Contributor"}
+              </h2>
+              <p class="opacity-50 text-xs font-mono truncate max-w-full px-2">{userProfile?.email}</p>
+            </div>
+          </section>
+        </>
+      )}
+
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const saveBtn = document.getElementById('save-profile-btn');
+  const statusLabel = document.getElementById('save-status');
+  const avatarInput = document.getElementById('avatar-file-input') as HTMLInputElement;
+  const avatarImg = document.getElementById('profile-avatar-img') as HTMLImageElement;
+  const PAYLOAD_URL = 'https://backend-cms-six.vercel.app';
+
+  const targetUserId = window.location.pathname.split('/').pop();
+
+  // 1. Media Upload Pipeline
+  if (avatarInput && avatarImg) {
+    avatarInput.addEventListener('change', async () => {
+      const selectedFile = avatarInput.files?.[0];
+      if (!selectedFile) return;
+
+      if (statusLabel) {
+        statusLabel.classList.remove('hidden');
+        statusLabel.innerText = "Syncing graphic asset documents...";
+      }
+
+      const uploadForm = new FormData();
+      uploadForm.append('file', selectedFile);
+
+      try {
+        const mediaResponse = await fetch(`${PAYLOAD_URL}/api/media`, {
+          method: 'POST',
+          body: uploadForm
+        });
+
+        if (!mediaResponse.ok) throw new Error('CMS rejected raw upload configuration.');
+        const mediaDoc = await mediaResponse.json();
+        const uploadedMediaId = mediaDoc.doc.id;
+        const uploadedMediaUrl = mediaDoc.doc.url;
+
+        const userSyncResponse = await fetch(`${PAYLOAD_URL}/api/users/${targetUserId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile_picture: uploadedMediaId })
+        });
+
+        if (!userSyncResponse.ok) throw new Error('Failed mapping graphic context back to identity.');
+
+        avatarImg.src = uploadedMediaUrl.startsWith('http') ? uploadedMediaUrl : `${PAYLOAD_URL}${uploadedMediaUrl}`;
+        if (statusLabel) statusLabel.innerText = "Identity asset structural mapping updated.";
+
+      } catch (err) {
+        console.error('Upload Error:', err);
+        if (statusLabel) statusLabel.innerText = "Error deploying content payload configurations.";
+      } finally {
+        setTimeout(() => statusLabel?.classList.add('hidden'), 3000);
+      }
+    });
+  }
+
+  // 2. Multi-field Contenteditable Synchronization Hook
+  if (saveBtn) {
+    const nameEl = document.getElementById('editable-name');
+    const locationEl = document.getElementById('editable-location');
+    const positionEl = document.getElementById('editable-position');
+    const companyEl = document.getElementById('editable-company');
+    const aboutEl = document.getElementById('editable-about');
+
+    const triggerEditMode = () => saveBtn.classList.remove('hidden');
+    
+    nameEl?.addEventListener('input', triggerEditMode);
+    locationEl?.addEventListener('input', triggerEditMode);
+    positionEl?.addEventListener('input', triggerEditMode);
+    companyEl?.addEventListener('input', triggerEditMode);
+    aboutEl?.addEventListener('input', triggerEditMode);
+
+    saveBtn.addEventListener('click', async () => {
+      if (!statusLabel) return;
+      
+      saveBtn.disabled = true;
+      statusLabel.classList.remove('hidden');
+      statusLabel.innerText = "Transmitting state sync mutations...";
+
+      let rawName = nameEl?.innerText.trim() || '';
+      let rawLocation = locationEl?.innerText.trim() || '';
+      let rawPosition = positionEl?.innerText.trim() || '';
+      let rawCompany = companyEl?.innerText.trim() || '';
+      let rawAbout = aboutEl?.innerText.trim().replace(/^"|"$/g, '') || '';
+
+      const nameParts = rawName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      try {
+        const response = await fetch(`${PAYLOAD_URL}/api/users/${targetUserId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+            location: rawLocation,
+            position: rawPosition,
+            company: rawCompany,
+            about: rawAbout
+          })
+        });
+
+        if (!response.ok) throw new Error('Database updates rejected request.');
+
+        statusLabel.innerText = "Database cluster synchronization complete.";
+        saveBtn.classList.add('hidden');
+
+      } catch (err: any) {
+        statusLabel.innerText = "Aborted: System mapping integrity fault.";
+        console.error(err);
+      } finally {
+        saveBtn.disabled = false;
+        setTimeout(() => statusLabel.classList.add('hidden'), 3000);
+      }
+    });
+  }
+</script>
+
+<style>
+  html {
+    scroll-behavior: smooth;
+  }
+  img {
+    will-change: filter, transform;
+  }
+  [contenteditable="true"] {
+    transition: all 0.15s ease-out;
+  }
+  [contenteditable="true"]:empty:before {
+    content: attr(data-placeholder);
+    opacity: 0.35;
+    font-style: italic;
+  }
+</style>

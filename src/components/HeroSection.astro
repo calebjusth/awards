@@ -1,7 +1,10 @@
 ---
-import { websites } from '../data/websites';
+// Force dynamic on-demand evaluation per server request
+export const prerender = false;
 
-// Dynamic Date Logic
+const PAYLOAD_URL = 'https://backend-cms-six.vercel.app';
+
+// Dynamic Date Display
 const today = new Date();
 const formattedDate = today.toLocaleDateString('en-US', {
   month: 'long',
@@ -9,57 +12,142 @@ const formattedDate = today.toLocaleDateString('en-US', {
   year: 'numeric'
 }).toUpperCase();
 
-// Get the first website award as featured
-const featured = websites[0] || null;
+let featuredProject: any = null;
+let overallScoreStr = '0.00';
+let creatorName = 'Independent Creator';
+let detailLink = '#';
+let displayImage = '/assets/placeholder-fallback.png';
 
-if (!featured) {
-  throw new Error('No website awards found');
+try {
+  // 1. Compute time boundary for the past 7 days using ISO format strings
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const dateThreshold = sevenDaysAgo.toISOString();
+
+  // 2. Pull submissions that landed within our 7-day window
+  const submissionsQuery = await fetch(
+    `${PAYLOAD_URL}/api/submission?where[createdAt][greater_than_equal]=${dateThreshold}&limit=100`
+  );
+  
+  if (!submissionsQuery.ok) throw new Error('Could not pull recent submissions baseline.');
+  const submissionsData = await submissionsQuery.json();
+  const recentSubmissions = submissionsData.docs || [];
+
+  if (recentSubmissions.length > 0) {
+    // 3. Request votes matching those project IDs to avoid gathering unrelated vote historical records
+    const projectIdsFilter = recentSubmissions.map((sub: any) => sub.id);
+    
+    // Construct Payload URL structure syntax for checking an array of options
+    const voteQueryUrl = `${PAYLOAD_URL}/api/vote?where[project_id][in]=${projectIdsFilter.join(',')}&limit=1000`;
+    const votesQuery = await fetch(voteQueryUrl);
+    const votesData = votesQuery.ok ? await votesQuery.json() : { docs: [] };
+    const allMatchingVotes = votesData.docs || [];
+
+    // 4. Group scores together by project node
+    const scoreTrackingTable: Record<string, { totalPoints: number; totalVotes: number }> = {};
+
+    allMatchingVotes.forEach((vote: any) => {
+      const targetId = typeof vote.project_id === 'object' ? vote.project_id?.id : vote.project_id;
+      if (!targetId) return;
+
+      // Extract your exact schema field value: over_all
+      const individualVoteValue = Number(vote.over_all) || 0;
+
+      if (!scoreTrackingTable[targetId]) {
+        scoreTrackingTable[targetId] = { totalPoints: 0, totalVotes: 0 };
+      }
+      scoreTrackingTable[targetId].totalPoints += individualVoteValue;
+      scoreTrackingTable[targetId].totalVotes += 1;
+    });
+
+    // 5. Evaluate the math on matching datasets to locate the leading score index
+    let winningProjectId = null;
+    let maximumAverageCalculated = -1;
+
+    recentSubmissions.forEach((sub: any) => {
+      const entry = scoreTrackingTable[sub.id];
+      // If a site doesn't have explicit community votes yet, fallback gracefully to base 0.00
+      const averageScore = entry && entry.totalVotes > 0 ? entry.totalPoints / entry.totalVotes : 0;
+      
+      if (averageScore > maximumAverageCalculated) {
+        maximumAverageCalculated = averageScore;
+        winningProjectId = sub.id;
+      }
+    });
+
+    // Fallback to the newest layout if no one has explicitly voted over the week yet
+    featuredProject = recentSubmissions.find((sub: any) => sub.id === winningProjectId) || recentSubmissions[0];
+    
+    if (maximumAverageCalculated > 0) {
+      overallScoreStr = maximumAverageCalculated.toFixed(2);
+    } else {
+      // Pull raw baseline fields if calculations evaluate to zero
+      overallScoreStr = (Number(featuredProject?.engagment_score) || 0).toFixed(2);
+    }
+  }
+
+  // 6. Build normalized data fallbacks if structural records are parsed fully
+  if (featuredProject) {
+    detailLink = `/websites/${featuredProject.id || featuredProject.slug}`;
+    
+    // Parse nested relationships comfortably
+    if (featuredProject.created_by && typeof featuredProject.created_by === 'object') {
+      const fName = featuredProject.created_by.first_name || '';
+      const lName = featuredProject.created_by.last_name || '';
+      creatorName = (fName || lName) ? `${fName} ${lName}`.trim() : featuredProject.created_by.email?.split('@')[0];
+    }
+
+    if (featuredProject.hero_image && typeof featuredProject.hero_image === 'object' && featuredProject.hero_image.url) {
+      const rawPath = featuredProject.hero_image.url;
+      displayImage = rawPath.startsWith('http') ? rawPath : `${PAYLOAD_URL}${rawPath}`;
+    }
+  }
+} catch (error) {
+  console.error('Critical internal error resolving top Site of the Day:', error);
 }
-
-const siteName = featured.title;
-const agency = featured.developer;
-const score = (
-  (featured.scores.jury.creativity +
-    featured.scores.jury.content +
-    featured.scores.jury.usability +
-    featured.scores.jury.interactivity) /
-  4
-).toFixed(2);
-const siteImage = featured.heroImage;
-const detailLink = `/websites/${featured.slug}`;
 ---
 
-<section class="relative w-full flex flex-col py-12 sm:py-16 md:py-20 lg:py-24 site-frame">
-    
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b-2 border-muted pb-6 sm:pb-8 mb-8 sm:mb-10 md:mb-12 gap-4 md:gap-0">
-        <div class="flex flex-col gap-1 sm:gap-2">
-            <span class="text-primary font-body text-caption">Site of Day</span>
-            <h1 class="font-title text-2xl sm:text-3xl md:text-4xl">{siteName}</h1>
+<section class="relative w-full flex flex-col pt-16 pb-24 md:pt-20 md:pb-32 site-frame max-w-7xl mx-auto px-6 lg:px-8">
+  {featuredProject ? (
+    <>
+      {/* Meta Identity Row Header */}
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-ink/10 pb-8 mb-12 gap-6">
+        <div class="space-y-2">
+          <span class="font-heading text-xs uppercase tracking-[0.3em] text-ink/95">Site of the Day</span>
+          <h1 class="font-title text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-ink leading-none">
+            {featuredProject.project_name}
+          </h1>
         </div>
         
-        <div class="flex flex-row md:flex-col items-center md:items-end gap-3 md:gap-2">
-            <div class="bg-primary px-3 sm:px-4 py-1 text-2xl sm:text-3xl md:text-4xl font-title rounded-sm" style="color: var(--color-canvas);">
-                {score}
-            </div>
-            <p class="font-body text-caption text-ink text-left md:text-right">
-                By {agency}<br class="hidden sm:inline md:hidden lg:inline"/>
-                <span class="whitespace-nowrap">{formattedDate}</span>
-            </p>
+        <div class="flex flex-row md:flex-col items-center md:items-end gap-4 md:gap-3 shrink-0">
+          <div class="bg-ink px-5 py-2 text-3xl sm:text-4xl md:text-5xl font-title font-bold tracking-tighter text-canvas">
+            {overallScoreStr}
+          </div>
+          <p class=" text-xs text-ink text-left md:text-right leading-relaxed">
+            By <span class="text-ink font-semibold">{creatorName}</span><br class="hidden md:inline"/>
+            <span class="font-sans tracking-wider text-[11px] block mt-0.5">{formattedDate}</span>
+          </p>
         </div>
-    </div>
+      </div>
 
-    <!-- Image Container with Link - object-contain to preserve design -->
-    <a 
+      {/* Expanded Wide Image Block Viewport */}
+      <a 
         href={detailLink} 
-        class="relative group block"
-        aria-label={`View ${siteName} details`}
-    >
-        <section class="mb-24 w-full">
-        <div class="aspect-[16/9] w-full  overflow-hidden bg-ink/5">
-          <img src={siteImage} alt={siteName} class="w-full h-full rounded-[2rem] object-cover" />
-        </div>
-      </section>
-        
-    </a>
-
+        class="relative group block w-full aspect-[16/9] overflow-hidden border border-muted/20 bg-muted/5"
+        aria-label={`Explore live documentation details for ${featuredProject.project_name}`}
+      >
+        <img 
+          src={`${displayImage}?tr=w-1600,q-90,f-auto`} 
+          alt={featuredProject.alt_text || featuredProject.project_name} 
+          class="w-full h-full object-cover  cubic-bezier(0.16, 1, 0.3, 1)" 
+          loading="eager"
+        />
+        <div class="absolute inset-0 bg-ink/5 group-hover:bg-transparent transition-colors duration-500" />
+      </a>
+    </>
+  ) : (
+    <div class="py-32 text-center border border-dashed border-muted/30 rounded-lg">
+      <p class="font-body text-sm italic text-ink/40">Searching network indexes for the primary featured showcase submission...</p>
+    </div>
+  )}
 </section>

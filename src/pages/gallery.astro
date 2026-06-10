@@ -1,14 +1,41 @@
 ---
+// Force Server-Side Rendering (SSR) mode on this page route
+export const prerender = false;
+
 import Layout from '../layouts/Layout.astro';
 
-// Mock data focusing on identity over titles
-const initialWorks = Array.from({ length: 20 }).map((_, i) => ({
-  id: i,
-  author: i % 2 === 0 ? "Helm Creatives" : "@kaleb_yohannes",
-  avatar: `https://i.pravatar.cc/150?u=${i}`,
-  thumbnail: `https://picsum.photos/seed/${i + 40}/1600/1000`,
-  isNominee: i % 5 === 0,
-}));
+// Base Payload domain reference
+const PAYLOAD_URL = 'https://backend-cms-six.vercel.app';
+
+interface SubmissionItem {
+  id: string | number;
+  _id?: string;
+  slug?: string;
+  project_name: string;
+  hero_image?: {
+    url: string;
+  } | string | null;
+  created_by?: {
+    email: string;
+  } | string | null;
+  engagment_score?: number;
+  vote_end_date?: string;
+}
+
+let initialWorks: SubmissionItem[] = [];
+let hasNextPage = false;
+
+try {
+  // Fetch initial paginated data directly from Payload CMS API (limit 20 matches your initial design)
+  const response = await fetch(`${PAYLOAD_URL}/api/submission?limit=20&depth=2`);
+  if (response.ok) {
+    const data = await response.json();
+    initialWorks = data.docs || [];
+    hasNextPage = data.hasNextPage || false;
+  }
+} catch (error) {
+  console.error('Failed to fetch initial submissions from Payload CMS:', error);
+}
 ---
 
 <Layout title="Gallery" description="The complete Gallery of Web design submissions to the yet vanguard.">
@@ -19,112 +46,220 @@ const initialWorks = Array.from({ length: 20 }).map((_, i) => ({
                 <p class="eyebrow">Unfiltered Submissions</p>
             </div>
             
-            <div class="flex gap-4">
-                <button class="section-heading text-ink">Latest</button>
-                <button class="section-heading text-muted hover:text-ink transition-colors">Top Voted</button>
-                <button class="section-heading text-muted hover:text-ink transition-colors">Nominees</button>
+            <div class="flex gap-4" id="filter-tabs">
+                <button class="section-heading text-ink transition-colors filter-btn active" data-filter="all">Latest</button>
+                <button class="section-heading text-muted hover:text-ink transition-colors filter-btn" data-filter="top">Top Voted</button>
+                <button class="section-heading text-muted hover:text-ink transition-colors filter-btn" data-filter="nominees">Nominees</button>
             </div>
         </header>
 
-        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-20">
-            {initialWorks.map((work) => (
-                <article class="group cursor-crosshair">
-                    <div class="relative aspect-[16/10] overflow-hidden bg-ink/5 border border-ink/5">
-                        <img 
-                            src={work.thumbnail} 
-                            alt={`Work by ${work.author}`} 
-                            class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                            loading="lazy"
-                        />
-                        
-                        <div class="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                            <button class="button-secondary">Vote</button>
-                            <button class="button-outline">Nominate</button>
+        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-20" data-backend={PAYLOAD_URL}>
+            {initialWorks.map((work) => {
+                // Handle dynamic ImageKit object parsing securely
+                let thumbnail = '/assets/placeholder-fallback.png';
+                if (work.hero_image && typeof work.hero_image === 'object' && work.hero_image.url) {
+                    thumbnail = `${work.hero_image.url}?tr=w-1200,q-85,f-auto`;
+                }
+                
+                const authorName = typeof work.created_by === 'object' && work.created_by?.email
+                    ? work.created_by.email.split('@')[0]
+                    : 'Wabi Contributor';
+
+                const itemSlug = work.slug || work._id || work.id || encodeURIComponent(String(work.project_name || '').toLowerCase().replace(/\s+/g,'-'));
+                const isNominee = (work.engagment_score || 0) >= 80;
+
+                return (
+                    <article class="group cursor-crosshair flex flex-col justify-between h-full" data-score={work.engagment_score || 0} data-nominee={isNominee ? "true" : "false"}>
+                        <div>
+                            <div class="relative aspect-[16/10] overflow-hidden bg-ink/5 border border-ink/5">
+                                <img 
+                                    src={thumbnail} 
+                                    alt={`Work titled ${work.project_name} by ${authorName}`} 
+                                    class="w-full h-full object-cover"
+                                    loading="lazy"
+                                />
+                                
+                                {isNominee && (
+                                    <div class="absolute top-6 left-6 accent-tag">
+                                        Nominee
+                                    </div>
+                                )}
+
+                                {/* Inner bottom actionable tray with constant visibility and layout shadow boundaries */}
+                                <div class="absolute bottom-4 inset-x-4 flex items-center justify-between gap-4 z-10">
+                                    <button class="button-secondary shadow-md backdrop-blur-sm transform-none">
+                                        Vote
+                                    </button>
+                                    <a href={`/websites/${itemSlug}`} class="text-ink flex items-center justify-center p-2 rounded-md bg-canvas/90 shadow-md backdrop-blur-sm transition-colors" aria-label="Open details">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
 
-                        {work.isNominee && (
-                            <div class="absolute top-6 left-6 accent-tag">
-                                Nominee
+                        {/* Side-by-side title blocks with safety truncations applied */}
+                        <div class="mt-6 flex items-center justify-between gap-4">
+                            <div class="flex items-baseline justify-between w-full gap-4 min-w-0">
+                                <h3 class="font-heading text-lg text-ink m-0 line-clamp-1 flex-1 min-w-0">
+                                    {work.project_name}
+                                </h3>
+                                <span class="text-small text-strong italic whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px] text-right">
+                                    {authorName}
+                                </span>
                             </div>
-                        )}
-                    </div>
-
-                    <div class="mt-6 flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-8 h-8 rounded-full overflow-hidden border border-muted">
-                                <img src={work.avatar} alt={work.author} class="w-full h-full object-cover grayscale" />
-                            </div>
-                            <span class="text-small text-strong italic group-hover:text-primary transition-colors">{work.author}</span>
+                            <div class="w-6 h-[1px] bg-muted group-hover:w-12 group-hover:bg-primary transition-all duration-500 shrink-0"></div>
                         </div>
-                        <div class="w-6 h-[1px] bg-muted group-hover:w-12 group-hover:bg-primary transition-all duration-500"></div>
-                    </div>
-                </article>
-            ))}
+                    </article>
+                );
+            })}
         </div>
 
-        <footer class="mt-32 pt-24 border-t border-muted flex justify-center">
-            <button id="load-more" class="group relative flex flex-col items-center gap-4">
-                <span class="eyebrow group-hover:text-primary transition-colors">Load More</span>
-                <div class="w-12 h-12 border border-muted flex items-center justify-center p-3 group-hover:border-primary transition-colors">
-                    <img src="/assets/right-up.png" class="w-full h-full object-contain rotate-90" alt="down arrow" />
-                </div>
-            </button>
-        </footer>
+        {hasNextPage && (
+            <footer id="footer-container" class="mt-32 pt-24 border-t border-muted flex justify-center">
+                <button id="load-more" class="group relative flex flex-col items-center gap-4" data-next-page="2">
+                    <span class="eyebrow group-hover:text-primary transition-colors">Load More</span>
+                    <div class="w-12 h-12 border border-muted flex items-center justify-center p-3 group-hover:border-primary transition-colors">
+                        <img src="/assets/right-up.png" class="w-full h-full object-contain rotate-90" alt="down arrow" />
+                    </div>
+                </button>
+            </footer>
+        )}
     </main>
 </Layout>
 
 <script>
-    let currentOffset = 20;
     const loadMoreBtn = document.getElementById('load-more');
     const grid = document.getElementById('gallery-grid');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const PAYLOAD_URL = grid?.getAttribute('data-backend') || 'https://backend-cms-six.vercel.app';
+    
+    let currentFilter = 'all';
 
+    // Pagination fetch architecture
     loadMoreBtn?.addEventListener('click', async () => {
+        const nextPage = loadMoreBtn.getAttribute('data-next-page');
+        if (!nextPage) return;
+
+        const originalContent = loadMoreBtn.innerHTML;
         loadMoreBtn.style.opacity = '0.5';
-        loadMoreBtn.innerText = 'Loading...';
+        const textSpan = loadMoreBtn.querySelector('span');
+        if (textSpan) textSpan.innerText = 'Loading...';
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 800));
-
+            const response = await fetch(`${PAYLOAD_URL}/api/submission?limit=10&page=${nextPage}&depth=2`);
+            if (!response.ok) throw new Error('Network error mapping payload data endpoints.');
+            
+            const data = await response.json();
+            const additions = data.docs || [];
             const fragment = document.createDocumentFragment();
             
-            for (let i = 0; i < 10; i++) {
-                const authorName = i % 2 === 0 ? "Helm Studio" : "@developer";
+            additions.forEach((work: any, i: number) => {
+                let thumbnail = '/assets/placeholder-fallback.png';
+                if (work.hero_image && typeof work.hero_image === 'object' && work.hero_image.url) {
+                    thumbnail = `${work.hero_image.url}?tr=w-1200,q-85,f-auto`;
+                }
+                
+                const authorName = typeof work.created_by === 'object' && work.created_by?.email
+                    ? work.created_by.email.split('@')[0]
+                    : 'Wabi Contributor';
+
+                const isNominee = (work.engagment_score || 0) >= 80;
+                const itemSlug = work.slug || work._id || work.id || encodeURIComponent(String(work.project_name || '').toLowerCase().replace(/\s+/g,'-'));
+                
                 const newWork = document.createElement('article');
-                newWork.className = 'group cursor-crosshair opacity-0 translate-y-8 transition-all duration-700';
+                newWork.className = 'group cursor-crosshair flex flex-col justify-between h-full opacity-0 translate-y-8 transition-all duration-700';
+                newWork.setAttribute('data-score', String(work.engagment_score || 0));
+                newWork.setAttribute('data-nominee', isNominee ? "true" : "false");
+                
                 newWork.innerHTML = `
-                    <div class="relative aspect-[16/10] overflow-hidden bg-ink/5 border border-muted">
-                        <img src="https://picsum.photos/seed/${currentOffset + i}/1600/1000" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" loading="lazy" />
-                        <div class="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                            <button class="button-secondary">Vote</button>
+                    <div>
+                        <div class="relative aspect-[16/10] overflow-hidden bg-ink/5 border border-ink/5">
+                            <img src="${thumbnail}" class="w-full h-full object-cover" loading="lazy" />
+                            ${isNominee ? `<div class="absolute top-6 left-6 accent-tag">Nominee</div>` : ''}
+                            <div class="absolute bottom-4 inset-x-4 flex items-center justify-between gap-4 z-10">
+                                <button class="button-secondary shadow-md backdrop-blur-sm transform-none">Vote</button>
+                                <a href="/websites/${itemSlug}" class="text-ink flex items-center justify-center p-2 rounded-md bg-canvas/90 shadow-md backdrop-blur-sm transition-colors" aria-label="Open details">
+                                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-6 flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-8 h-8 rounded-full overflow-hidden border border-muted">
-                                <img src="https://i.pravatar.cc/150?u=${currentOffset + i}" class="w-full h-full object-cover grayscale" />
-                            </div>
-                            <span class="text-small text-strong italic group-hover:text-primary transition-colors">${authorName}</span>
+                    <div class="mt-6 flex items-center justify-between gap-4">
+                        <div class="flex items-baseline justify-between w-full gap-4 min-w-0">
+                            <h3 class="font-heading text-lg text-ink m-0 line-clamp-1 flex-1 min-w-0">${work.project_name}</h3>
+                            <span class="text-small text-strong italic  whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px] text-right">${authorName}</span>
                         </div>
-                        <div class="w-6 h-[1px] bg-muted group-hover:w-12 group-hover:bg-primary transition-all duration-500"></div>
+                        <div class="w-6 h-[1px] bg-muted group-hover:w-12 group-hover:bg-primary transition-all duration-500 shrink-0"></div>
                     </div>
                 `;
+                
                 fragment.appendChild(newWork);
+                
+                // Process dynamic display filtering states
+                if (currentFilter === 'nominees' && !isNominee) {
+                    newWork.classList.add('hidden');
+                }
+                
                 setTimeout(() => newWork.classList.remove('opacity-0', 'translate-y-8'), i * 80);
-            }
+            });
 
             grid?.appendChild(fragment);
-            currentOffset += 10;
+            applyCurrentSortingAndFilter();
 
-            loadMoreBtn.style.opacity = '1';
-            loadMoreBtn.innerHTML = `
-                <span class="eyebrow">Load More</span>
-                <div class="w-12 h-12 border border-muted flex items-center justify-center p-3 group-hover:border-primary">
-                    <img src="/assets/right-up.png" class="w-full h-full object-contain rotate-90" alt="down arrow" />
-                </div>
-            `;
+            if (data.hasNextPage) {
+                loadMoreBtn.setAttribute('data-next-page', String(data.nextPage));
+                loadMoreBtn.style.opacity = '1';
+                loadMoreBtn.innerHTML = originalContent;
+            } else {
+                const footer = document.getElementById('footer-container');
+                if (footer) footer.style.display = 'none';
+            }
             
         } catch (error) {
-            console.error('Failed to load more projects', error);
+            console.error('Failed to load more projects from server framework:', error);
+            loadMoreBtn.style.opacity = '1';
+            if (textSpan) textSpan.innerText = 'Error. Try Again.';
         }
     });
+
+    // Filtering & DOM Sort Operations
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => {
+                b.classList.remove('text-ink', 'active');
+                b.classList.add('text-muted');
+            });
+            btn.classList.add('text-ink', 'active');
+            btn.classList.remove('text-muted');
+
+            currentFilter = btn.getAttribute('data-filter') || 'all';
+            applyCurrentSortingAndFilter();
+        });
+    });
+
+    function applyCurrentSortingAndFilter() {
+        const articles = Array.from(grid?.querySelectorAll('article') || []);
+        
+        articles.forEach(article => {
+            const isNominee = article.getAttribute('data-nominee') === 'true';
+            article.classList.remove('hidden');
+
+            if (currentFilter === 'nominees' && !isNominee) {
+                article.classList.add('hidden');
+            }
+        });
+
+        if (currentFilter === 'top') {
+            articles.sort((a, b) => {
+                const scoreA = parseInt(a.getAttribute('data-score') || '0', 10);
+                const scoreB = parseInt(b.getAttribute('data-score') || '0', 10);
+                return scoreB - scoreA;
+            });
+            articles.forEach(article => grid?.appendChild(article));
+        }
+    }
 </script>

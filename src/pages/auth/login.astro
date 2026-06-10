@@ -1,4 +1,5 @@
 ---
+export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 ---
 
@@ -9,16 +10,17 @@ import Layout from '../../layouts/Layout.astro';
                 <p class="text-primary text-strong mb-3">Login</p>
                 <h1 class="heading-1 mb-4">Access your account.</h1>
                 <p class="body-copy max-w-xl">
-                    Enter your email and we&apos;ll send a secure one-time code so you can sign in safely.
+                    Enter your email and we'll send a secure one-time code so you can sign in safely.
                 </p>
             </div>
 
             <div class="card-panel">
-                <form action="/auth/verify" class="space-y-6">
+                <form id="login-form" class="space-y-6">
                     <label class="form-label">
                         Email Address
                         <input
                             type="email"
+                            id="login-email"
                             name="email"
                             placeholder="example@gmail.com"
                             class="form-input"
@@ -26,15 +28,82 @@ import Layout from '../../layouts/Layout.astro';
                         />
                     </label>
 
-                    <button type="submit" class="button-primary w-full">
+                    <div id="error-message" class="text-xs font-mono text-red-500 hidden bg-red-500/5 border border-red-500/10 p-3 rounded-lg"></div>
+
+                    <button type="submit" id="submit-btn" class="button-primary w-full">
                         Send OTP
                     </button>
                 </form>
 
                 <p class="form-footnote mt-6">
-                    Don&apos;t have an account? <a class="link-secondary" href="/auth/signup">Sign up</a>.
+                    Don't have an account? <a class="link-secondary" href="/auth/signup">Sign up</a>.
                 </p>
             </div>
         </div>
     </main>
 </Layout>
+
+<script>
+    const loginForm = document.getElementById('login-form') as HTMLFormElement;
+    const errorContainer = document.getElementById('error-message');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const PAYLOAD_URL = 'https://backend-cms-six.vercel.app';
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!errorContainer || !submitBtn) return;
+
+            errorContainer.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Checking directory...';
+
+            const emailInput = document.getElementById('login-email') as HTMLInputElement;
+            const emailValue = emailInput?.value.trim();
+            const fallbackPassword = `Wabi_OTP_Pass_${emailValue.split('@')[0]}_99!`;
+
+            try {
+                // 1. Verify if user account exists in the directory
+                const findUserRes = await fetch(`${PAYLOAD_URL}/api/users?where[email][equals]=${encodeURIComponent(emailValue)}`);
+                if (!findUserRes.ok) throw new Error('Database response failed.');
+                
+                const directory = await findUserRes.json();
+                
+                // 2. If user doesn't exist, redirect them to the sign up page immediately
+                if (!directory.docs || directory.docs.length === 0) {
+                    window.location.href = '/auth/signup';
+                    return;
+                }
+
+                // 3. Authenticate to kick off Payload hooks and dispatch the OTP email
+                const loginRes = await fetch(`${PAYLOAD_URL}/api/users/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: emailValue,
+                        password: fallbackPassword
+                    })
+                });
+
+                // Check for successful authentication or explicitly handle pending verification states
+                if (!loginRes.ok && loginRes.status !== 401) {
+                    throw new Error('Failed to initialize login session.');
+                }
+
+                // 4. Stash context and route user to verification checkpoint
+                sessionStorage.setItem('wabi_auth_context_email', emailValue);
+                sessionStorage.setItem('wabi_auth_fallback_pwd', fallbackPassword);
+                
+                window.location.href = '/auth/verify';
+
+            } catch (err: any) {
+                errorContainer.innerText = err.message || 'Verification initialization sequence dropped.';
+                errorContainer.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Send OTP';
+            }
+        });
+    }
+</script>

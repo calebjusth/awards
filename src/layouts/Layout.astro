@@ -1,4 +1,5 @@
 ---
+export const prerender = false;
 import '../styles/global.css';
 
 interface Props {
@@ -7,7 +8,43 @@ interface Props {
 }
 
 const { title, description = "The Standard of Ethiopian Web Design." } = Astro.props;
-const siteUrl = Astro.site; // 
+
+const PAYLOAD_URL = 'https://backend-cms-six.vercel.app';
+
+// 1. Server-Side Cookie Session Check
+const sessionToken = Astro.cookies.get('payload-token')?.value;
+let isLoggedIn = !!sessionToken;
+
+let userProfile: any = null;
+let headerAvatarUrl = "";
+
+if (isLoggedIn && sessionToken) {
+    try {
+        const response = await fetch(`${PAYLOAD_URL}/api/users/${sessionToken}`);
+        if (response.ok) {
+            userProfile = await response.json();
+            
+            const firstName = userProfile?.first_name || '';
+            const lastName = userProfile?.last_name || '';
+            const combinedName = (firstName || lastName) 
+                ? `${firstName} ${lastName}`.trim() 
+                : userProfile?.email?.split('@')[0] || 'User';
+
+            const initials = (firstName && lastName)
+                ? `${firstName.charAt(0)}${lastName.charAt(0)}`
+                : combinedName.slice(0, 2);
+
+            if (userProfile?.profile_picture?.url) {
+                const rawPath = userProfile.profile_picture.url;
+                headerAvatarUrl = rawPath.startsWith('http') ? rawPath : `${PAYLOAD_URL}${rawPath}`;
+            } else {
+                headerAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=0a0a0a&color=f5f5f5&bold=true&format=svg&size=128`;
+            }
+        }
+    } catch (error) {
+        console.error("Failed capturing active authentication node header metrics:", error);
+    }
+}
 ---
 
 <!doctype html>
@@ -24,7 +61,7 @@ const siteUrl = Astro.site; //
         
         <title>{title} | Wabi Awards — Elevating Ethiopian Web Design</title>
         <meta name="description" content={description} />
-        <!-- Open Graph -->
+        
         <meta property="og:title" content={`${title} | Wabi Awards`} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="website" />
@@ -32,12 +69,10 @@ const siteUrl = Astro.site; //
         <meta property="og:image" content="https://wabi-sigma.vercel.app/og-image.webp" />
         <meta property="og:site_name" content="Wabi Awards" />
 
-        <!-- Twitter Card -->
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${title} | Wabi Awards`} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content="https://wabi-sigma.vercel.app/og-image.webp" />
-
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     </head>
@@ -45,93 +80,173 @@ const siteUrl = Astro.site; //
     <body class="selection:bg-primary selection:text-canvas bg-canvas overflow-x-hidden">
         
         <header class="fixed top-6 left-1/2 -translate-x-1/2 z-40 w-[95%] max-w-7xl">
-            <nav class="glass-card flex items-center justify-between px-8 py-4 bg-canvas">
-                <a href="/" class="font-title hover:text-primary transition-colors">
-                    <img src="/primary-logo.svg" alt="Wabi Awards Logo" class="w-52 h-auto" />
+            <nav class="glass-card flex items-center justify-between px-8 py-4 bg-canvas/90 backdrop-blur-md border border-muted/20 shadow-sm">
+                <a href="/" class="font-title hover:text-primary transition-colors shrink-0">
+                    <img src="/primary-logo.svg" alt="Wabi Awards Logo" class="w-40 md:w-52 h-auto" />
                 </a>
 
-                <div class="hidden md:flex flex-1 mx-6 items-center bg-muted px-8 py-2 border border-muted focus-within:border-primary transition-all">
-                    <i class="fa-solid fa-magnifying-glass text-ink"></i>
-                    <input type="text" placeholder="Search Inspo..." class="bg-transparent border-none focus:ring-0 ml-4 w-full placeholder:text-ink" />
+                <div class="hidden md:flex flex-1 mx-8 items-center bg-muted/30 px-6 py-2 border border-muted/10 focus-within:border-primary transition-all">
+                    <i class="fa-solid fa-magnifying-glass text-ink/40 text-sm"></i>
+                    <input type="text" placeholder="Search Inspo..." class="bg-transparent border-none focus:ring-0 ml-3 w-full placeholder:text-ink/40 text-sm outline-none" />
                 </div>
 
-                <div class="flex items-center gap-4">
-                    <div class="hidden sm:flex items-center gap-6">
-                        <a href="/auth/login" class="hover:text-primary transition-colors">Login</a>
-                        <a href="/auth/signup" class="bg-primary text-canvas px-6 py-2 hover:brightness-110 transition-all">Sign Up</a>
+                <div class="flex items-center gap-5">
+                    {/* Contextual CTA Container Hook */}
+                    <div id="auth-cta-container" class="hidden sm:flex items-center gap-6 text-sm font-heading tracking-wider uppercase">
+                        {isLoggedIn ? (
+                            <a href="/submissions/new" class="bg-primary text-canvas px-5 py-2.5 hover:brightness-110 transition-all font-medium">
+                                Submit Website
+                            </a>
+                        ) : (
+                            <>
+                                <a href="/auth/login" class="hover:text-primary transition-colors font-medium">Login</a>
+                                <a href="/auth/signup" class="bg-ink text-canvas px-5 py-2.5 hover:bg-primary transition-all font-medium">Sign Up</a>
+                            </>
+                        )}
                     </div>
 
-                    <div class="flex items-center justify-center w-11 h-11 rounded-full border border-muted bg-muted overflow-hidden shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=256&q=80" alt="Profile avatar" class="w-full h-full object-cover grayscale" />
+                    {/* Anchor Injector Container node for Auth syncing */}
+                    <div id="profile-avatar-wrapper" class="flex items-center">
+                        {isLoggedIn && (
+                            <a 
+                                id="profile-avatar-link"
+                                href={userProfile?.id ? `/users/${userProfile.id}` : '#'} 
+                                class="flex items-center justify-center w-10 h-10 rounded-full border border-muted/40 bg-muted/20 overflow-hidden shadow-inner hover:scale-105 transition-transform duration-200 shrink-0"
+                                aria-label="View user portfolio registry node"
+                            >
+                                <img 
+                                    id="header-avatar-img"
+                                    src={headerAvatarUrl} 
+                                    alt="Account Profile picture" 
+                                    class="w-full h-full object-cover grayscale" 
+                                />
+                            </a>
+                        )}
                     </div>
 
-                    <button id="menu-toggle" class="group flex flex-col gap-1.5 p-2 cursor-pointer">
-                        <span class="w-8 h-1 bg-ink group-hover:bg-primary transition-colors"></span>
-                        <span class="w-8 h-1 bg-ink group-hover:bg-primary transition-colors"></span>
+                    <button id="menu-toggle" class="group flex flex-col gap-1.5 p-1.5 cursor-pointer" aria-label="Toggle navigation directory drawer">
+                        <span class="w-7 h-0.5 bg-ink group-hover:bg-primary transition-colors rounded-full"></span>
+                        <span class="w-7 h-0.5 bg-ink group-hover:bg-primary transition-colors rounded-full"></span>
                     </button>
                 </div>
             </nav>
         </header>
 
+        {/* Directory Drawer Block */}
         <div id="full-page-menu" class="fixed inset-0 z-[9999] bg-primary backdrop-blur-sm -translate-y-full transition-transform duration-700 ease-[cubic-bezier(0.85,0,0.15,1)] flex items-center justify-center overflow-y-auto">
             <button id="menu-close" class="absolute top-6 right-6 text-canvas p-4 z-50 hover:scale-110 transition-transform">
-                <i class="fa-solid fa-xmark text-5xl"></i>
+                <i class="fa-solid fa-xmark text-4xl"></i>
             </button>
             
             <div class="grid grid-cols-1 md:grid-cols-2 w-full h-full">
                 <nav class="flex flex-col justify-center px-12 md:px-24 gap-6 text-canvas">
-                    <a href="/winners" class="font-title text-6xl md:text-8xl transition-all">Winners</a>
-                    <a href="/nominees" class="font-title text-6xl md:text-8xl transition-all">Nominees</a>
-                    <a href="/events" class="font-title text-6xl md:text-8xl transition-all">Events</a>
-                    <a href="/gallery" class="font-title text-6xl md:text-8xl transition-all">Gallery</a>
+                    <a href="/winners" class="font-title text-5xl md:text-7xl hover:translate-x-3 transition-transform duration-300">Winners</a>
+                    <a href="/nominees" class="font-title text-5xl md:text-7xl hover:translate-x-3 transition-transform duration-300">Nominees</a>
+                    <a href="/events" class="font-title text-5xl md:text-7xl hover:translate-x-3 transition-transform duration-300">Events</a>
+                    <a href="/gallery" class="font-title text-5xl md:text-7xl hover:translate-x-3 transition-transform duration-300">Gallery</a>
                 </nav>
                 
                 <div class="hidden md:block relative overflow-hidden bg-ink">
-                    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070" alt="Design Concept" class="w-full h-full object-cover opacity-60" />
+                    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070" alt="Design Concept Canvas" class="w-full h-full object-cover opacity-40" />
                 </div>
             </div>
         </div>
 
-        <main class="relative z-10 pt-28 md:pt-32">
+        <main class="relative z-10 pt-28 md:pt-36">
             <slot />
         </main>
 
-        <footer class="bg-canvas overflow-hidden text-ink p-10 md:p-20 flex flex-col relative border-t border-muted">
+        <footer class="bg-canvas overflow-hidden text-ink p-10 md:p-20 flex flex-col relative border-t border-muted/30">
             <div class="absolute top-20 right-0 w-96 h-96 bg-primary rounded-full blur-[120px] opacity-10 animate-drift pointer-events-none"></div>
             
-            <div class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
-                <div class="md:col-span-2">
-                    <img src="/vertical-logo.svg" alt="Wabi Awards Logo" class="w-80 h-auto mb-6" />
-                
+            <div class="max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16">
+                <div class="md:col-span-2 space-y-4">
+                    <img src="/vertical-logo.svg" alt="Wabi Awards Vertical Logo" class="w-64 h-auto mb-2" />
                 </div>
 
-                <div class="flex flex-col gap-6">
-                    <h3 class="font-body text-primary  ">Explore</h3>
-                    <div class="flex flex-col gap-3 font-body font-bold text-2xl">
+                <div class="flex flex-col gap-5">
+                    <h3 class="font-heading text-xs uppercase tracking-[0.2em] text-primary">Explore</h3>
+                    <div class="flex flex-col gap-2 font-title text-2xl">
                         <a href="/about" class="hover:text-primary transition-colors">About</a>
                         <a href="/faq" class="hover:text-primary transition-colors">FAQ</a>
                         <a href="/contact" class="hover:text-primary transition-colors">Contact</a>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-6">
-                    <h3 class="font-body text-primary">Follow Us</h3>
-                    <div class="flex items-center gap-6 mt-6 text-3xl">
-                        <a href="#" class="hover:text-primary transition-all"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="#" class="hover:text-primary transition-all"><i class="fa-brands fa-tiktok"></i></a>
-                        <a href="#" class="hover:text-primary transition-all"><i class="fa-brands fa-telegram"></i></a>
-                        <a href="#" class="hover:text-primary transition-all"><i class="fa-brands fa-x-twitter"></i></a>
+                <div class="flex flex-col gap-5">
+                    <h3 class="font-heading text-xs uppercase tracking-[0.2em] text-primary">Follow Us</h3>
+                    <div class="flex items-center gap-6 mt-2 text-2xl text-ink/70">
+                        <a href="#" class="hover:text-primary transition-colors"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="hover:text-primary transition-colors"><i class="fa-brands fa-tiktok"></i></a>
+                        <a href="#" class="hover:text-primary transition-colors"><i class="fa-brands fa-telegram"></i></a>
+                        <a href="#" class="hover:text-primary transition-colors"><i class="fa-brands fa-x-twitter"></i></a>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-20 pt-10 border-t border-muted flex flex-col md:flex-row justify-between items-end gap-4 font-body">
-                <div class="text-caption text-ink">© 2026 Wabi. All Rights Reserved.</div>
-                <p class="text-caption text-ink text-right">Powered by <a href="https://helmcreative.com.et" target="_blank" class="hover:text-primary transition-colors">Helm Creative</a></p>
+            <div class="max-w-7xl mx-auto w-full mt-16 pt-8 border-t border-muted/20 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-mono text-ink/50">
+                <div>© 2026 Wabi. All Rights Reserved.</div>
+                <p>Powered by <a href="https://helmcreative.com.et" target="_blank" class="hover:text-primary transition-colors font-bold text-ink/80">Helm Creative</a></p>
             </div>
         </footer>
 
-        <script>
+        {/* Sync Engine Script Layer */}
+        <script define:vars={{ PAYLOAD_URL, serverIsLoggedIn: isLoggedIn }}>
+            // 2. Client-Side Authentication Sync Fallback Engine
+            const clientEmail = sessionStorage.getItem('wabi_auth_context_email');
+            
+            // If the server missed the cookie state but client contexts remain valid, synchronize nodes
+            if (!serverIsLoggedIn && clientEmail) {
+                fetch(`${PAYLOAD_URL}/api/users?where[email][equals]=${encodeURIComponent(clientEmail)}`)
+                    .then(res => res.ok ? res.json() : null)
+                    .then(data => {
+                        if (data && data.docs && data.docs.length > 0) {
+                            const profile = data.docs[0];
+                            
+                            // Re-render CTA elements dynamically
+                            const ctaContainer = document.getElementById('auth-cta-container');
+                            if (ctaContainer) {
+                                ctaContainer.innerHTML = `
+                                    <a href="/submissions/new" class="bg-primary text-canvas px-5 py-2.5 hover:brightness-110 transition-all font-medium">
+                                        Submit Website
+                                    </a>
+                                `;
+                            }
+
+                            // Generate dynamic fallback profile elements and inject them securely into our DOM wrapper
+                            const avatarWrapper = document.getElementById('profile-avatar-wrapper');
+                            if (avatarWrapper) {
+                                let avatarTargetUrl = "";
+                                if (profile.profile_picture?.url) {
+                                    const path = profile.profile_picture.url;
+                                    avatarTargetUrl = path.startsWith('http') ? path : `${PAYLOAD_URL}${path}`;
+                                } else {
+                                    const initName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || clientEmail.split('@')[0];
+                                    avatarTargetUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initName)}&background=0a0a0a&color=f5f5f5&bold=true&format=svg&size=128`;
+                                }
+
+                                avatarWrapper.innerHTML = `
+                                    <a 
+                                        id="profile-avatar-link"
+                                        href="/users/${profile.id}" 
+                                        class="flex items-center justify-center w-10 h-10 rounded-full border border-muted/40 bg-muted/20 overflow-hidden shadow-inner hover:scale-105 transition-transform duration-200 shrink-0"
+                                        aria-label="View user portfolio registry node"
+                                    >
+                                        <img 
+                                            id="header-avatar-img"
+                                            src="${avatarTargetUrl}" 
+                                            alt="Account Profile picture" 
+                                            class="w-full h-full object-cover grayscale" 
+                                        />
+                                    </a>
+                                `;
+                            }
+                        }
+                    })
+                    .catch(e => console.error("Client identity check error:", e));
+            }
+
+            // Menu Drawer Interactions
             const menuToggle = document.getElementById('menu-toggle');
             const menuClose = document.getElementById('menu-close');
             const menu = document.getElementById('full-page-menu');

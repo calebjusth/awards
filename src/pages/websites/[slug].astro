@@ -1,297 +1,625 @@
 ---
+// Force Server-Side Rendering (SSR) mode on this page route
+export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
-import { websites } from '../../data/websites';
 
-export async function getStaticPaths() {
-  return websites.map((website) => ({ params: { slug: website.slug } }));
-}
-
+const PAYLOAD_URL = 'https://backend-cms-six.vercel.app';
 const { slug } = Astro.params;
-const website = websites.find((item) => item.slug === slug);
+
+let website = null;
+let projectId = null;
+let rawColorPalette: Array<{ id: string; color: string | null }> = [];
+let developerId: string | null = null;
+
+try {
+  const isNumericId = /^\d+$/.test(slug || '');
+  const queryString = isNumericId 
+    ? `where[id][equals]=${slug}`
+    : `where[slug][equals]=${encodeURIComponent(slug || '')}`;
+
+  const res = await fetch(`${PAYLOAD_URL}/api/submission?${queryString}&depth=2`);
+  
+  if (res.ok) {
+    const body = await res.json();
+    const doc = (body.docs && body.docs[0]) || null;
+    
+    if (doc) {
+      projectId = doc.id;
+      rawColorPalette = doc.color_code || [];
+      
+      const isCreatorObj = doc.created_by && typeof doc.created_by === 'object';
+      if (isCreatorObj) {
+        developerId = doc.created_by.id;
+      }
+
+      website = {
+        id: doc.id,
+        slug: slug,
+        title: doc.project_name || 'Untitled Project',
+        liveUrl: doc.live_url || doc.website_url || null,
+        developer: isCreatorObj
+          ? `${doc.created_by.first_name || ''} ${doc.created_by.last_name || ''}`.trim() || doc.created_by.email.split('@')[0]
+          : 'Wabi Contributor',
+        description: doc.description || 'No description provided.',
+        heroImage: (doc.hero_image && typeof doc.hero_image === 'object' && doc.hero_image.url) 
+          ? `${doc.hero_image.url}?tr=w-1600,q-90,f-auto` 
+          : '/assets/placeholder-fallback.png',
+        gallery: Array.isArray(doc.gallery) 
+          ? doc.gallery.map(g => (g && typeof g === 'object' && g.url) ? `${g.url}?tr=w-1200,q-85,f-auto` : '')
+          : [],
+        techStack: Array.isArray(doc.tech_stack) ? doc.tech_stack : ['Web Design', 'Creative Layout']
+      };
+    }
+  }
+} catch (err) {
+  console.error('Error fetching project route metrics details:', err);
+}
 
 if (!website) {
-  throw new Error('Website not found');
+  throw new Error(`Website not found: ${slug}`);
 }
 
-// Keep the overall SOTD score
-const avgJuryScore = (
-  (website.scores.jury.creativity +
-    website.scores.jury.content +
-    website.scores.jury.usability +
-    website.scores.jury.interactivity) /
-  4
-).toFixed(1);
+// Fetch user token from session cookiestore to determine evaluation constraints
+const sessionCookieToken = Astro.cookies.get('payload-token')?.value;
 
-// Demo locations for the voters list
-const demoLocations = ['Tokyo, JP', 'New York, USA', 'London, UK', 'Berlin, DE', 'Paris, FR'];
+// Authenticate and get current logged-in user profile from Payload API
+let currentUserId: string | null = null;
+if (sessionCookieToken) {
+  try {
+    const userMeResponse = await fetch(`${PAYLOAD_URL}/api/users/me`, {
+      headers: { 'Authorization': `JWT ${sessionCookieToken}` }
+    });
+    if (userMeResponse.ok) {
+      const meData = await userMeResponse.json();
+      if (meData?.user?.id) {
+        currentUserId = meData.user.id;
+      }
+    }
+  } catch (meErr) {
+    console.error('Failed retrieving active account configuration:', meErr);
+  }
+}
+
+let completeVotersList: any[] = [];
+try {
+  // Use server token access mapping if needed by passing cookie headers downstream
+  const voteResponse = await fetch(`${PAYLOAD_URL}/api/vote?where[project_id][equals]=${projectId}&limit=100&depth=2`, {
+    headers: sessionCookieToken ? { 'Cookie': `payload-token=${sessionCookieToken}` } : {}
+  });
+  if (voteResponse.ok) {
+    const voteData = await voteResponse.json();
+    completeVotersList = voteData.docs || [];
+  }
+} catch (voteErr) {
+  console.error('Failed retrieving voters list:', voteErr);
+}
+
+let calculatedLiveRating = "0.00";
+if (completeVotersList.length > 0) {
+  const validVotes = completeVotersList.filter(v => v.over_all);
+  if (validVotes.length > 0) {
+    const combinedSum = validVotes.reduce((acc, current) => acc + Number(current.over_all), 0);
+    calculatedLiveRating = (combinedSum / validVotes.length).toFixed(2);
+  }
+}
+
+// Check real database IDs against each other to block duplicate voting
+const hasAlreadyRated = currentUserId ? completeVotersList.some(vote => {
+  const voterUser = vote.user_id || vote.created_by;
+  if (!voterUser) return false;
+  
+  const targetId = typeof voterUser === 'object' ? voterUser.id : voterUser;
+  return String(targetId) === String(currentUserId);
+}) : false;
 ---
 
-<Layout title={`${website.title} — Showcase`} description={website.description}>
+<Layout title={`${website.title} — Case Showcase`} description={website.description}>
   <main class="bg-canvas text-ink min-h-screen pt-24 pb-32">
-    <article class="site-frame max-w-7xl mx-auto px-6 md:px-12">
+    <article class="site-frame max-w-7xl mx-auto px-4 sm:px-6 md:px-12" data-project-id={projectId} id="details-root">
       
       {/* 1. Header Section */}
-      <header class="flex flex-col items-center text-center space-y-8 mb-20">
-        <span class="text-caption  uppercase tracking-[0.3em]">Site of the Day</span>
-        <h1 class="font-title text-[4rem] md:text-[7rem] leading-none tracking-tight">{website.title}</h1>
+      <header class="flex flex-col items-center text-center space-y-6 mb-16 md:mb-20">
+        <span class="text-caption uppercase tracking-[0.3em] text-ink/50 text-xs">Site of the Day</span>
+        <div class="flex items-center justify-center gap-3 md:gap-4 group max-w-full px-2">
+          <h1 class="font-title text-[2.5rem] sm:text-[4.5rem] md:text-[6.5rem] leading-none tracking-tight font-bold text-ink break-words max-w-full">
+            {website.title}
+          </h1>
+          {website.liveUrl && (
+            <a 
+              href={website.liveUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="inline-flex p-2.5 md:p-3 rounded-full border border-muted/40 hover:border-ink text-ink/60 hover:text-ink bg-ink/[0.01] hover:bg-ink/[0.04] transition-all duration-300 self-center shrink-0"
+              aria-label={`Visit live site for ${website.title}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 sm:w-5 sm:h-5 md:w-7 md:h-7 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                <line x1="7" y1="17" x2="17" y2="7"></line>
+                <polyline points="7 7 17 7 17 17"></polyline>
+              </svg>
+            </a>
+          )}
+        </div>
         <div class="flex items-center gap-4">
-          <span class="text-caption  uppercase tracking-widest">Overall Rating</span>
-          <span class="font-title text-3xl md:text-4xl text-primary">{avgJuryScore}</span>
+          <span class="text-caption uppercase tracking-widest text-ink/60 text-xs">Live Rating</span>
+          <span class="font-title text-2xl md:text-4xl text-primary font-bold">{calculatedLiveRating}</span>
         </div>
       </header>
 
       {/* 2. Hero Image */}
-      <section class="mb-24 w-full">
-        <div class="aspect-[16/9] w-full  overflow-hidden bg-ink/5">
-          <img src={website.heroImage} alt={website.title} class="w-full h-full rounded-[2rem] object-cover" />
+      <section class="mb-16 md:mb-24 w-full">
+        <div class="aspect-[16/9] w-full overflow-hidden">
+          <img src={website.heroImage} alt={website.title} class="w-full h-full object-cover" />
         </div>
       </section>
 
       {/* 3. Developer & Stack */}
-      <section class="max-w-4xl mx-auto text-center space-y-16 mb-32">
-        <div class="space-y-6">
-          <p class="text-xl  font-body">
-            By <span class="text-ink font-medium">{website.developer}</span>
+      <section class="max-w-4xl mx-auto text-center space-y-8 md:space-y-12 mb-24 md:mb-32">
+        <div class="space-y-4 px-2">
+          <p class="text-base md:text-lg font-body text-ink/70">
+            Designed & Developed by {developerId ? (
+              <a href={`/users/${developerId}`} class="text-ink font-semibold tracking-wide block sm:inline text-lg md:text-xl mt-1 sm:mt-0 underline decoration-muted/40 hover:decoration-primary transition-colors">
+                {website.developer}
+              </a>
+            ) : (
+              <span class="text-ink font-semibold tracking-wide block sm:inline text-lg md:text-xl mt-1 sm:mt-0">{website.developer}</span>
+            )}
           </p>
-          <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-3">
+          <div class="flex flex-wrap justify-center items-center gap-x-3 gap-y-2">
             {website.techStack.map((tech) => (
-              <span class="text-caption  tracking-wide">{tech}</span>
+              <span class="text-caption tracking-wider border border-muted/40 px-3 py-1 rounded-full text-[11px] md:text-xs bg-ink/[0.02] text-ink/80">{tech}</span>
             ))}
           </div>
         </div>
 
         {/* 4. Description */}
-        <div>
-          <p class="font-body text-2xl md:text-3xl leading-relaxed text-ink/90">
+        <div class="pt-6 border-t border-muted/30 px-2">
+          <p class="font-body text-lg md:text-2xl leading-relaxed text-ink/80 max-w-3xl mx-auto">
             {website.description}
           </p>
         </div>
       </section>
 
       {/* 5. Color Palette */}
-      <section class="max-w-4xl mx-auto mb-32 flex flex-col items-center">
-        <span class="text-caption  uppercase tracking-[0.3em] mb-12">Main Palette</span>
-        
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-10">
-          
-          {/* Pink Card */}
-          <div 
-            class="group relative w-56 h-72 md:w-64 md:h-80 rounded-2xl p-6 flex flex-col justify-between transition-transform duration-500 hover:-translate-y-2" 
-            style="background-color: #f472b6;"
-          >
-            <span class="font-body text-sm tracking-widest" style="color: #60a5fa;">#F472B6</span>
-            <div class="flex justify-center items-center flex-grow">
-              <span class="font-body text-7xl md:text-8xl" style="color: #60a5fa;">Aa</span>
-            </div>
-          </div>
-
-          {/* Blue Card */}
-          <div 
-            class="group relative w-56 h-72 md:w-64 md:h-80 rounded-2xl p-6 flex flex-col justify-between transition-transform duration-500 hover:-translate-y-2" 
-            style="background-color: #60a5fa;"
-          >
-            <span class="font-title text-sm tracking-widest" style="color: #f472b6;">#60A5FA</span>
-            <div class="flex justify-center items-center flex-grow">
-              <span class="font-title text-7xl md:text-8xl" style="color: #f472b6;">Aa</span>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 6. Bento Grid (Other Elements) */}
-      <section class="mb-32">
-        <span class="block text-center text-caption  uppercase tracking-[0.3em] mb-12">Gallery & Layouts</span>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
-          <div class="md:col-span-2  overflow-hidden bg-ink/5">
-            <img src={website.heroImage} class="w-full h-full object-cover " alt="Gallery item" />
-          </div>
-          <div class=" overflow-hidden bg-ink/5">
-            <img src={website.heroImage} class="w-full h-full object-cover  object-left" alt="Gallery item" />
-          </div>
-          <div class=" overflow-hidden bg-ink/5">
-            <img src={website.heroImage} class="w-full h-full object-cover  object-right" alt="Gallery item" />
-          </div>
-          <div class="md:col-span-2  overflow-hidden bg-ink/5">
-            <img src={website.heroImage} class="w-full h-full object-cover  object-bottom" alt="Gallery item" />
-          </div>
-        </div>
-      </section>
-
-      {/* 7. Voters Table & Vote Trigger */}
-      <section class="max-w-4xl mx-auto">
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-6 border-b border-muted pb-8 mb-8">
-          <h3 class="text-caption text-ink uppercase tracking-[0.3em]">Community Votes</h3>
-          <button 
-            id="vote-btn" 
-            class="px-8 py-4 bg-ink text-canvas font-title text-sm uppercase tracking-widest rounded-full hover:bg-primary transition-colors duration-300"
-          >
-            Rate this site
-          </button>
-        </div>
-
-        <div class="space-y-2">
-          {website.recentVoters.map((voter, index) => (
-            <div class="flex items-center justify-between py-6 group hover:px-4 transition-all duration-300 rounded-xl hover:bg-muted/10">
-              <div class="flex items-center gap-6">
-                <img 
-                  src={voter.avatar} 
-                  alt={voter.name} 
-                  class="w-14 h-14 rounded-full object-cover grayscale " 
-                />
-                <div class="flex flex-col gap-1">
-                  <p class="font-title text-lg text-ink">{voter.name}</p>
-                  <p class="text-caption ">{demoLocations[index % demoLocations.length]}</p>
+      {rawColorPalette.length > 0 && (
+        <section class="max-w-4xl mx-auto mb-24 md:mb-32 flex flex-col items-center">
+          <span class="text-caption uppercase tracking-[0.3em] mb-8 md:mb-12 text-xs text-ink/50">Main Palette</span>
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center gap-4 md:gap-10 w-full px-2">
+            {rawColorPalette.filter(c => c.color).map((item) => (
+              <div 
+                class="group relative w-full sm:w-56 h-36 sm:h-72 rounded-2xl p-4 sm:p-6 flex flex-col justify-between border border-muted/10 transition-transform duration-500 hover:-translate-y-1" 
+                style={`background-color: ${item.color};`}
+              >
+                <span class="font-body text-xs sm:text-sm tracking-widest font-semibold text-canvas">
+                  {item.color?.toUpperCase()}
+                </span>
+                <div class="flex justify-center items-center flex-grow">
+                  <span class="font-heading text-3xl sm:text-7xl text-canvas/90">Aa</span>
                 </div>
               </div>
-              <span class="font-title text-2xl text-primary">{(10 - (index * 0.2)).toFixed(1)}</span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 6. Bento Grid Gallery */}
+      {website.gallery.length > 0 && (
+        <section class="mb-24 md:mb-32">
+          <span class="block text-center text-caption uppercase tracking-[0.3em] mb-8 md:mb-12 text-xs text-ink/50">Gallery</span>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 auto-rows-[200px] sm:auto-rows-[260px] md:auto-rows-[320px]">
+            {website.gallery.slice(0, 4).map((imgUrl, i) => {
+              const spanClasses = [
+                "md:col-span-2 overflow-hidden rounded-none border border-muted/20",
+                "overflow-hidden rounded-none border border-muted/20",
+                "overflow-hidden rounded-none border border-muted/20",
+                "md:col-span-2 overflow-hidden rounded-none border border-muted/20"
+              ];
+              const alignments = ["object-cover", "object-cover object-left", "object-cover object-right", "object-cover object-bottom"];
+              return (
+                <div class={spanClasses[i % spanClasses.length]}>
+                  <img src={imgUrl} class={`w-full h-full ${alignments[i % alignments.length]}`} alt="Gallery piece" loading="lazy" />
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* 7. Scoreboard Table Section */}
+      <section class="max-w-5xl mx-auto mb-16 px-2">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-muted pb-6 mb-6">
+          <div class="space-y-1">
+            <h3 class="text-caption text-ink uppercase tracking-[0.3em] text-xs">Scores</h3>
+            <p class="text-sm text-ink/60">Have your say</p>
+          </div>
+          {hasAlreadyRated ? (
+            <button 
+              disabled
+              class="w-full sm:w-auto px-6 py-3.5 bg-muted/20 text-ink/40 font-heading text-xs uppercase tracking-widest rounded-lg cursor-not-allowed border border-muted/30"
+            >
+              Submission Already Rated
+            </button>
+          ) : (
+            <button 
+              id="vote-btn" 
+              class="w-full sm:w-auto px-6 py-3.5 bg-ink text-canvas font-heading text-xs uppercase tracking-widest hover:bg-primary transition-colors duration-300"
+            >
+              Rate Submission
+            </button>
+          )}
+        </div>
+
+        <div class="hidden md:grid grid-cols-12 gap-4 pb-4 px-4 text-xs font-semibold tracking-wider uppercase border-b border-muted/30 text-ink/60">
+          <div class="col-span-5">Community Members</div>
+          <div class="col-span-1 text-center">Design</div>
+          <div class="col-span-1 text-center">Usability</div>
+          <div class="col-span-1 text-center">Creativity</div>
+          <div class="col-span-1 text-center">Content</div>
+          <div class="col-span-1 text-center">Overall</div>
+        </div>
+
+        <div class="divide-y divide-muted/30" id="voters-table-body">
+          {completeVotersList.length === 0 ? (
+            <div class="py-12 text-center text-ink/50 text-sm italic">
+              No votes have been left yet.
             </div>
-          ))}
+          ) : (
+            completeVotersList.map((vote) => {
+              const voterUser = vote.user_id || vote.created_by;
+              const isUserObj = voterUser && typeof voterUser === 'object';
+              
+              const firstName = isUserObj ? voterUser.first_name || '' : '';
+              const lastName = isUserObj ? voterUser.last_name || '' : '';
+              const titleName = isUserObj 
+                ? `${firstName} ${lastName}`.trim() || voterUser.email.split('@')[0]
+                : 'Verified Evaluator';
+
+              const rawLoc = isUserObj ? voterUser.location || '' : '';
+              const locationText = rawLoc.trim() ? rawLoc : 'Global';
+              const companyText = isUserObj ? voterUser.company || 'independent.dev' : 'member';
+              const targetProfileId = isUserObj ? voterUser.id : (typeof voterUser === 'string' ? voterUser : null);
+              
+              const avatarInitials = firstName && lastName 
+                ? `${firstName.charAt(0)}${lastName.charAt(0)}`
+                : titleName.slice(0, 2).toUpperCase();
+              
+              const userPfp = (isUserObj && voterUser.profile_picture?.url) 
+                ? voterUser.profile_picture.url 
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(avatarInitials)}&background=0a0a0a&color=f5f5f5&bold=true&format=svg`;
+
+              return (
+                <div 
+                  class="voter-row grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center py-5 px-3 md:px-4 hover:bg-muted/5 transition-colors rounded-xl"
+                  data-voter-id={targetProfileId}
+                >
+                  <div class="col-span-1 md:col-span-5 flex items-center gap-3 md:gap-4 min-w-0">
+                    <img src={userPfp} alt={titleName} class="voter-avatar w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border border-muted/40 shrink-0 bg-muted/10" />
+                    <div class="min-w-0 flex-1">
+                      <p class="font-heading text-sm md:text-base text-ink font-semibold truncate leading-snug">
+                        {targetProfileId ? (
+                          <a href={`/users/${targetProfileId}`} class="voter-name-link hover:text-primary transition-colors underline decoration-muted/30">
+                            {titleName}
+                          </a>
+                        ) : (
+                          <span class="voter-name-fallback">{titleName}</span>
+                        )}
+                        <span class="text-xs font-normal text-ink block sm:inline sm:ml-1">
+                          from <span class="voter-location">{locationText}</span>
+                        </span>
+                      </p>
+                      <p class="voter-company text-xs text-ink  truncate mt-0.5">{companyText.toLowerCase()}</p>
+                    </div>
+                  </div>
+                  
+                  <div class="col-span-1 md:col-span-7 grid grid-cols-5 gap-2 sm:gap-4 items-center text-xs md:text-sm font-mono mt-3 md:mt-0 pt-3 md:pt-0 border-t border-muted/20 md:border-t-0">
+                    <div class="flex flex-col md:block items-center text-center">
+                      <span class="text-[9px] uppercase text-ink/50 md:hidden font-sans mb-0.5 font-semibold">Design</span>
+                      <span class="text-ink">{vote.design || '-'}</span>
+                    </div>
+                    <div class="flex flex-col md:block items-center text-center">
+                      <span class="text-[9px] uppercase text-ink/50 md:hidden font-sans mb-0.5 font-semibold">Usab</span>
+                      <span class="text-ink">{vote.usability || '-'}</span>
+                    </div>
+                    <div class="flex flex-col md:block items-center text-center">
+                      <span class="text-[9px] uppercase text-ink/50 md:hidden font-sans mb-0.5 font-semibold">Crea</span>
+                      <span class="text-ink">{vote.creativity || '-'}</span>
+                    </div>
+                    <div class="flex flex-col md:block items-center text-center">
+                      <span class="text-[9px] uppercase text-ink/50 md:hidden font-sans mb-0.5 font-semibold">Cont</span>
+                      <span class="text-ink">{vote.content || '-'}</span>
+                    </div>
+                    <div class="flex flex-col md:block items-center col-span-1 bg-ink/[0.04] p-1.5 rounded text-center md:bg-transparent md:p-0">
+                      <span class="text-[9px] uppercase text-ink/50 md:hidden font-sans mb-0.5 font-bold">Over</span>
+                      <span class="text-primary font-bold text-sm md:text-base">{vote.over_all ? Number(vote.over_all).toFixed(1) : '-'}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </section>
-
     </article>
 
-    {/* 8. The Minimalist Vote Modal */}
-    <dialog id="vote-modal" class="backdrop:bg-canvas/80 backdrop:backdrop-blur-md rounded-2xl bg-canvas border border-muted p-0 shadow-2xl m-auto">
-      <div class="w-[90vw] max-w-lg p-10">
-        <div class="flex justify-between items-center mb-10">
-          <h2 class="font-title text-3xl text-ink">Your Rating</h2>
-          <button 
-            id="close-modal"
-            class=" hover:text-ink transition-colors text-3xl font-light leading-none"
-            aria-label="Close modal"
-          >
-            &times;
-          </button>
+    {/* 8. Voting Modal Interface */}
+    <dialog id="vote-modal" class="backdrop:bg-ink/40 backdrop:backdrop-blur-md rounded-2xl bg-canvas border border-muted p-0 shadow-2xl m-auto max-w-2xl w-[92vw] overflow-hidden">
+      <div id="auth-gate-view" class="hidden p-10 text-center space-y-6">
+        <h2 class="font-heading text-2xl font-bold text-ink">Account Required</h2>
+        <p class="text-sm text-ink/70 max-w-md mx-auto">You must be logged in to your contributor account to rate this showcase submission.</p>
+        <div class="pt-4">
+          <a href="/auth/login" class="inline-block px-8 py-3 bg-ink text-canvas text-xs uppercase tracking-widest font-bold rounded hover:bg-primary transition-colors">
+            Login to Account
+          </a>
+        </div>
+      </div>
+
+      <div id="wizard-form-view" class="p-6 md:p-10 space-y-8">
+        <div class="flex justify-between items-start">
+          <div>
+            <h2 class="font-heading text-xl md:text-2xl font-bold text-ink">{website.title}</h2>
+            <p class="text-xs text-ink/60 mt-1">needs your vote.</p>
+          </div>
+          <button id="close-modal" class="text-2xl font-light p-2 hover:text-primary transition-colors">&times;</button>
         </div>
 
-        <form id="vote-form" class="space-y-8">
-          {['Design', 'Content', 'Creativity', 'Responsiveness'].map((category) => (
-            <div class="space-y-3">
+        <div class="space-y-6">
+          {['Design', 'Usability', 'Creativity', 'Content'].map((category, index) => (
+            <div data-step-index={index} class={`wizard-step space-y-6 ${index !== 0 ? 'hidden' : ''}`}>
               <div class="flex justify-between items-end">
-                <label class="text-caption text-ink uppercase tracking-wider">{category}</label>
-                <span class="font-title text-primary text-xl rating-display">5</span>
+                <div>
+                  <h3 class="text-base md:text-lg font-bold text-ink uppercase tracking-wide">{category}</h3>
+                  <p class="text-xs text-ink/60 mt-1 max-w-xs md:max-w-md">
+                    {category === 'Design' && "Does it engage the user through color, typography, and imagery?"}
+                    {category === 'Usability' && "Is it intuitive, clear, and seamless to navigate?"}
+                    {category === 'Creativity' && "How original, fresh, and impactful is the concept?"}
+                    {category === 'Content' && "Is the information structural, clear, and well copy-edited?"}
+                  </p>
+                </div>
+                <span class="text-xs font-mono text-ink/40 font-bold">{index + 1} / 4</span>
               </div>
-              <input 
-                type="range" 
-                name={category.toLowerCase()} 
-                min="1" 
-                max="10" 
-                value="5" 
-                class="w-full rating-slider accent-primary bg-muted h-1 rounded-full appearance-none cursor-pointer"
-              />
+
+              <div class="grid grid-cols-5 sm:grid-cols-10 gap-1.5 sm:gap-2">
+                {Array.from({ length: 10 }, (_, i) => i + 1).map((val) => (
+                  <button 
+                    type="button" 
+                    data-value={val}
+                    data-category={category.toLowerCase()}
+                    class="wizard-score-btn h-11 sm:h-12 flex flex-col items-center justify-center border border-muted/60 rounded-xl hover:border-ink transition-all active:scale-95 bg-canvas group"
+                  >
+                    <span class="text-xs sm:text-sm font-mono font-bold text-ink">{val}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           ))}
 
-          <div class="pt-8 mt-8 border-t border-muted">
+          <div class="flex items-center justify-between pt-4 border-t border-muted/20">
             <button 
-              type="submit"
-              class="w-full px-6 py-4 bg-ink text-canvas font-title uppercase tracking-widest rounded-full hover:bg-primary transition-colors duration-300"
+              type="button" 
+              id="prev-step-btn" 
+              class="px-5 py-2 text-xs uppercase tracking-wider text-ink/60 border border-muted/40 rounded-lg hover:border-ink hover:text-ink transition-all disabled:opacity-0"
+              disabled
             >
-              Submit Rating
+              &larr; Back
             </button>
+            <span id="wizard-status-msg" class="text-xs font-mono text-primary hidden">Saving matrix configurations...</span>
           </div>
-        </form>
+        </div>
       </div>
     </dialog>
-
   </main>
 </Layout>
 
-<style>
-  dialog {
-    animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  dialog::backdrop {
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95) translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  /* Custom styling for sliders to ensure they look clean across browsers */
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    height: 20px;
-    width: 20px;
-    border-radius: 50%;
-    background: var(--color-primary);
-    cursor: pointer;
-    border: 2px solid var(--color-canvas);
-    box-shadow: 0 0 0 1px var(--color-primary);
-  }
-</style>
-
 <script>
-  // Vote Modal Functionality
   const voteBtn = document.getElementById('vote-btn');
   const voteModal = document.getElementById('vote-modal') as HTMLDialogElement;
   const closeModalBtn = document.getElementById('close-modal');
-  const voteForm = document.getElementById('vote-form') as HTMLFormElement;
-  const sliders = document.querySelectorAll('.rating-slider');
+  const authGateView = document.getElementById('auth-gate-view');
+  const wizardFormView = document.getElementById('wizard-form-view');
+  const prevStepBtn = document.getElementById('prev-step-btn') as HTMLButtonElement;
+  const statusMsg = document.getElementById('wizard-status-msg');
+  
+  const rootContainer = document.getElementById('details-root');
+  const PROJECT_ID = rootContainer?.getAttribute('data-project-id') || null;
+  const PAYLOAD_URL = 'https://backend-cms-six.vercel.app';
 
-  // Update numbers when sliding
-  sliders.forEach(slider => {
-    slider.addEventListener('input', (e) => {
-      const target = e.target as HTMLInputElement;
-      const display = target.parentElement?.querySelector('.rating-display');
-      if (display) {
-        display.textContent = target.value;
+  const scoresCollected: Record<string, number> = { design: 0, usability: 0, creativity: 0, content: 0 };
+  let currentStep = 0;
+  let clientSideUserId: string | null = null;
+  let clientSideHasVoted = false;
+
+  function getCookieValue(name: string) {
+    return document.cookie.split('; ').find(row => row.startsWith(`${name}=`))?.split('=')[1] || null;
+  }
+
+  function isUserAuthenticated() {
+    return !!getCookieValue('payload-token');
+  }
+
+  async function syncActiveUserRowData() {
+    const activeEmail = sessionStorage.getItem('wabi_auth_context_email');
+    const token = getCookieValue('payload-token');
+    if (!activeEmail) return;
+
+    try {
+      const res = await fetch(`${PAYLOAD_URL}/api/users?where[email][equals]=${encodeURIComponent(activeEmail)}`);
+      if (!res.ok) return;
+      
+      const data = await res.json();
+      if (data && data.docs && data.docs.length > 0) {
+        const profile = data.docs[0];
+        clientSideUserId = profile.id;
+        
+        // Dynamic client check against duplicate rating
+        if (PROJECT_ID) {
+          const voteCheckRes = await fetch(`${PAYLOAD_URL}/api/vote?where[project_id][equals]=${PROJECT_ID}&where[user_id][equals]=${clientSideUserId}&limit=1`, {
+            headers: token ? { 'Authorization': `JWT ${token}` } : {}
+          });
+          if (voteCheckRes.ok) {
+            const voteCheckData = await voteCheckRes.json();
+            if (voteCheckData.docs && voteCheckData.docs.length > 0) {
+              clientSideHasVoted = true;
+              if (voteBtn) {
+                voteBtn.setAttribute('disabled', 'true');
+                voteBtn.className = "w-full sm:w-auto px-6 py-3.5 bg-muted/20 text-ink/40 font-heading text-xs uppercase tracking-widest rounded-lg cursor-not-allowed border border-muted/30";
+                voteBtn.textContent = "Submission Already Rated";
+              }
+            }
+          }
+        }
+
+        // Target fallback cells that contain matching profile contexts
+        const targetRows = document.querySelectorAll('.voter-row');
+        targetRows.forEach(row => {
+          const voterId = row.getAttribute('data-voter-id');
+          if (voterId === clientSideUserId || (!voterId && activeEmail)) {
+            const firstName = profile.first_name || '';
+            const lastName = profile.last_name || '';
+            const resolvedName = `${firstName} ${lastName}`.trim() || activeEmail.split('@')[0];
+            const resolvedLocation = (profile.location || '').trim() ? profile.location : 'Global';
+            const resolvedCompany = profile.company || 'independent.dev';
+
+            const initials = firstName && lastName ? `${firstName.charAt(0)}${lastName.charAt(0)}` : resolvedName.slice(0,2).toUpperCase();
+            const resolvedAvatar = profile.profile_picture?.url 
+              ? (profile.profile_picture.url.startsWith('http') ? profile.profile_picture.url : `${PAYLOAD_URL}${profile.profile_picture.url}`)
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=0a0a0a&color=f5f5f5&bold=true&format=svg`;
+
+            const linkElement = row.querySelector('.voter-name-link');
+            const fallbackElement = row.querySelector('.voter-name-fallback');
+            if (linkElement) linkElement.textContent = resolvedName;
+            if (fallbackElement) fallbackElement.textContent = resolvedName;
+
+            const locElement = row.querySelector('.voter-location');
+            if (locElement) locElement.textContent = resolvedLocation;
+
+            const compElement = row.querySelector('.voter-company');
+            if (compElement) compElement.textContent = resolvedCompany.toLowerCase();
+
+            const avatarImg = row.querySelector('.voter-avatar');
+            if (avatarImg) avatarImg.setAttribute('src', resolvedAvatar);
+          }
+        });
       }
-    });
-  });
+    } catch(err) {
+      console.error('Error synchronizing table nodes:', err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', syncActiveUserRowData);
+  syncActiveUserRowData();
 
   if (voteBtn && voteModal && closeModalBtn) {
     voteBtn.addEventListener('click', () => {
+      if (clientSideHasVoted) {
+        alert('You have already evaluated this project showcase submission.');
+        return;
+      }
       voteModal.showModal();
-    });
-
-    closeModalBtn.addEventListener('click', () => {
-      voteModal.close();
-    });
-
-    voteModal.addEventListener('click', (e) => {
-      if (e.target === voteModal) {
-        voteModal.close();
+      if (!isUserAuthenticated()) {
+        authGateView?.classList.remove('hidden');
+        wizardFormView?.classList.add('hidden');
+      } else {
+        authGateView?.classList.add('hidden');
+        wizardFormView?.classList.remove('hidden');
+        resetWizard();
       }
     });
 
-    voteForm?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      
-      const formData = new FormData(voteForm);
-      const submission = {
-        design: formData.get('design'),
-        content: formData.get('content'),
-        creativity: formData.get('creativity'),
-        responsiveness: formData.get('responsiveness'),
-      };
-      
-      console.log('Vote submitted:', submission);
-      
-      // Reset logic
-      voteModal.close();
-      voteForm.reset();
-      document.querySelectorAll('.rating-display').forEach(display => {
-        display.textContent = '5';
+    closeModalBtn.addEventListener('click', () => voteModal.close());
+    voteModal.addEventListener('click', (e) => { if (e.target === voteModal) voteModal.close(); });
+
+    const scoreButtons = document.querySelectorAll('.wizard-score-btn');
+    scoreButtons.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const target = e.currentTarget as HTMLButtonElement;
+        const category = target.getAttribute('data-category') || '';
+        const value = parseInt(target.getAttribute('data-value') || '7', 10);
+
+        scoresCollected[category] = value;
+
+        if (currentStep < 3) {
+          goToStep(currentStep + 1);
+        } else {
+          await submitMetricsPipeline();
+        }
       });
-      
-      alert('Thank you for your vote! Your ratings have been recorded.');
     });
+
+    if (prevStepBtn) {
+      prevStepBtn.addEventListener('click', () => {
+        if (currentStep > 0) goToStep(currentStep - 1);
+      });
+    }
+  }
+
+  function goToStep(stepIndex: number) {
+    const steps = document.querySelectorAll('.wizard-step');
+    steps.forEach((step, idx) => {
+      if (idx === stepIndex) {
+        step.classList.remove('hidden');
+      } else {
+        step.classList.add('hidden');
+      }
+    });
+    currentStep = stepIndex;
+    if (prevStepBtn) prevStepBtn.disabled = currentStep === 0;
+  }
+
+  function resetWizard() {
+    currentStep = 0;
+    goToStep(0);
+    Object.keys(scoresCollected).forEach(k => scoresCollected[k] = 0);
+  }
+
+  async function submitMetricsPipeline() {
+    if (!PROJECT_ID) return;
+    const token = getCookieValue('payload-token');
+
+    if (statusMsg) {
+      statusMsg.classList.remove('hidden');
+      statusMsg.innerText = "Saving matrix configurations...";
+    }
+
+    document.querySelectorAll('.wizard-score-btn').forEach(b => (b as HTMLButtonElement).disabled = true);
+
+    const overallComputed = parseFloat(
+      ((scoresCollected.design + scoresCollected.usability + scoresCollected.creativity + scoresCollected.content) / 4).toFixed(2)
+    );
+
+    const submissionPayload = {
+      project_id: parseInt(PROJECT_ID, 10) || PROJECT_ID,
+      user_id: clientSideUserId, 
+      category: 'design', 
+      design: scoresCollected.design,
+      usability: scoresCollected.usability,
+      creativity: scoresCollected.creativity,
+      content: scoresCollected.content,
+      over_all: overallComputed,
+      comment: 'Vote added via live project details panel client script routing.'
+    };
+
+    try {
+      const response = await fetch(`${PAYLOAD_URL}/api/vote`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `JWT ${token}` } : {})
+        },
+        body: JSON.stringify(submissionPayload)
+      });
+
+      if (!response.ok) throw new Error('Failed to save score to the CMS.');
+      
+      voteModal.close();
+      window.location.reload();
+    } catch (error) {
+      console.error('Error submitting vote:', error);
+      alert('Could not submit your vote. Please check your network connection.');
+      document.querySelectorAll('.wizard-score-btn').forEach(b => (b as HTMLButtonElement).disabled = false);
+      if (statusMsg) statusMsg.classList.add('hidden');
+    }
   }
 </script>
+
+<style>
+  html { scroll-behavior: smooth; }
+</style>
